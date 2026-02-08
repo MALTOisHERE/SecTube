@@ -54,6 +54,8 @@ export const videoAPI = {
   dislikeVideo: (id) => api.post(`/videos/${id}/dislike`),
   addComment: (id, data) => api.post(`/videos/${id}/comments`, data),
   getComments: (id, params) => api.get(`/videos/${id}/comments`, { params }),
+  getCommentReplies: (commentId) => api.get(`/videos/comments/${commentId}/replies`),
+  likeComment: (commentId) => api.post(`/videos/comments/${commentId}/like`),
   searchVideos: (params) => api.get('/videos/search', { params }),
 };
 

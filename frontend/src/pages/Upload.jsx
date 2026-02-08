@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from 'react-query';
 import { videoAPI } from '../services/api';
+import useToastStore from '../store/toastStore';
 import { FaUpload, FaVideo, FaImage } from 'react-icons/fa';
 
 const categories = [
@@ -24,6 +25,7 @@ const categories = [
 
 const Upload = () => {
   const navigate = useNavigate();
+  const { addToast } = useToastStore();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -36,7 +38,6 @@ const Upload = () => {
   const [videoFile, setVideoFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState('');
 
   const uploadMutation = useMutation(
     (data) =>
@@ -46,10 +47,11 @@ const Upload = () => {
       }),
     {
       onSuccess: (response) => {
+        addToast({ type: 'success', message: 'Video uploaded successfully! Processing started.' });
         navigate(`/video/${response.data.data._id}`);
       },
       onError: (err) => {
-        setError(err.response?.data?.message || 'Upload failed. Please try again.');
+        addToast({ type: 'error', message: err.response?.data?.message || 'Upload failed. Please try again.' });
       },
     }
   );
@@ -65,11 +67,10 @@ const Upload = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024 * 1024) {
-        setError('Video file must be less than 5GB');
+        addToast({ type: 'error', message: 'Video file must be less than 5GB' });
         return;
       }
       setVideoFile(file);
-      setError('');
     }
   };
 
@@ -84,7 +85,7 @@ const Upload = () => {
     e.preventDefault();
 
     if (!videoFile) {
-      setError('Please select a video file');
+      addToast({ type: 'warning', message: 'Please select a video file' });
       return;
     }
 
@@ -127,11 +128,6 @@ const Upload = () => {
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

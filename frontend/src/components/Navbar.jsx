@@ -1,12 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaHome, FaTh, FaShieldAlt } from 'react-icons/fa';
+import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaHome, FaTh } from 'react-icons/fa';
 import { useState } from 'react';
 import useAuthStore from '../store/authStore';
+import useToastStore from '../store/toastStore';
+import ConfirmDialog from './ConfirmDialog';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { addToast } = useToastStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -15,18 +19,23 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleLogoutConfirm = () => {
     logout();
+    addToast({ type: 'info', message: 'You have been logged out successfully.' });
     navigate('/');
+    setShowLogoutConfirm(false);
   };
 
   return (
     <nav className="bg-dark-900 border-b border-dark-800 sticky top-0 z-50">
       <div className="px-4 h-14 flex items-center justify-between gap-4">
         {/* Left: Logo */}
-        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-          <FaShieldAlt className="text-xl text-primary-600" />
-          <span className="text-lg font-semibold text-white">CyberStream</span>
+        <Link to="/" className="flex items-center flex-shrink-0">
+          <img src="/logo.png" alt="SecTube Logo" className="h-10 w-auto" />
         </Link>
 
         {/* Center: Search */}
@@ -69,7 +78,7 @@ const Navbar = () => {
                 <span className="text-white">{user?.username}</span>
               </Link>
               <button
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 className="p-2 rounded hover:bg-dark-800"
                 title="Logout"
               >
@@ -112,6 +121,17 @@ const Navbar = () => {
           <span>Browse</span>
         </Link>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogoutConfirm}
+        title="Confirm Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        type="warning"
+      />
     </nav>
   );
 };

@@ -148,8 +148,8 @@ export const getVideo = async (req, res, next) => {
     // Add user interaction data
     const videoObj = video.toObject();
     if (req.user) {
-      videoObj.isLiked = video.likes.some(id => id.toString() === req.user.id);
-      videoObj.isDisliked = video.dislikes.some(id => id.toString() === req.user.id);
+      videoObj.isLiked = video.likes.some(id => id.toString() === req.user.id.toString());
+      videoObj.isDisliked = video.dislikes.some(id => id.toString() === req.user.id.toString());
     } else {
       videoObj.isLiked = false;
       videoObj.isDisliked = false;
@@ -402,16 +402,20 @@ export const getComments = async (req, res, next) => {
       .limit(limit)
       .populate('user', 'username displayName avatar');
 
-    // Get reply count for each comment
+    // Get reply count and like status for each comment
     const commentsWithReplies = await Promise.all(
       comments.map(async (comment) => {
         const replyCount = await Comment.countDocuments({
           parentComment: comment._id,
           isDeleted: false
         });
+        const commentObj = comment.toObject();
+        const isLiked = req.user ? comment.likes.some(id => id.toString() === req.user.id.toString()) : false;
         return {
-          ...comment.toObject(),
-          replyCount
+          ...commentObj,
+          replyCount,
+          likeCount: comment.likes.length,
+          isLiked
         };
       })
     );
@@ -429,6 +433,74 @@ export const getComments = async (req, res, next) => {
       page,
       pages: Math.ceil(total / limit),
       data: commentsWithReplies
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get replies for a comment
+export const getCommentReplies = async (req, res, next) => {
+  try {
+    const replies = await Comment.find({
+      parentComment: req.params.commentId,
+      isDeleted: false
+    })
+      .sort('createdAt')
+      .populate('user', 'username displayName avatar');
+
+    // Add like status for each reply
+    const repliesWithLikeStatus = replies.map(reply => {
+      const replyObj = reply.toObject();
+      const isLiked = req.user ? reply.likes.some(id => id.toString() === req.user.id.toString()) : false;
+      return {
+        ...replyObj,
+        likeCount: reply.likes.length,
+        isLiked
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      count: replies.length,
+      data: repliesWithLikeStatus
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Like a comment
+export const likeComment = async (req, res, next) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Comment not found'
+      });
+    }
+
+    // Check if already liked
+    const likeIndex = comment.likes.indexOf(req.user.id);
+
+    if (likeIndex > -1) {
+      // Already liked, so unlike
+      comment.likes.splice(likeIndex, 1);
+    } else {
+      // Not liked, so like
+      comment.likes.push(req.user.id);
+    }
+
+    await comment.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        likes: comment.likes.length,
+        isLiked: likeIndex === -1
+      }
     });
   } catch (error) {
     next(error);

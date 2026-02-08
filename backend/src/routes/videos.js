@@ -10,6 +10,8 @@ import {
   dislikeVideo,
   addComment,
   getComments,
+  getCommentReplies,
+  likeComment,
   searchVideos
 } from '../controllers/videos.js';
 import { protect, authorize } from '../middleware/auth.js';
@@ -53,5 +55,9 @@ router.delete('/:videoId', protect, deleteVideo);
 router.post('/:videoId/like', protect, likeVideo);
 router.post('/:videoId/dislike', protect, dislikeVideo);
 router.post('/:videoId/comments', protect, addComment);
+
+// Comment routes
+router.get('/comments/:commentId/replies', getCommentReplies);
+router.post('/comments/:commentId/like', protect, likeComment);
 
 export default router;

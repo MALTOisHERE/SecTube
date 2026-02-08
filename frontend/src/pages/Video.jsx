@@ -1,23 +1,41 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { FaThumbsUp, FaThumbsDown, FaShare } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile } from 'react-icons/fa';
 import { videoAPI } from '../services/api';
 import VideoPlayer from '../components/VideoPlayer';
+import CommentItem from '../components/CommentItem';
+import EmojiPicker from '../components/EmojiPicker';
 import useAuthStore from '../store/authStore';
+import useToastStore from '../store/toastStore';
 
 const Video = () => {
   const { videoId } = useParams();
   const { isAuthenticated, user } = useAuthStore();
+  const { addToast } = useToastStore();
   const queryClient = useQueryClient();
   const [comment, setComment] = useState('');
   const [showDescription, setShowDescription] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiButtonRef = useRef(null);
 
   const { data: videoData, isLoading } = useQuery(
     ['video', videoId],
     () => videoAPI.getVideo(videoId)
   );
+
+  const video = videoData?.data?.data;
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+
+  // Update local state when video data changes
+  useEffect(() => {
+    if (video) {
+      setIsLiked(video.isLiked || false);
+      setIsDisliked(video.isDisliked || false);
+    }
+  }, [video?.isLiked, video?.isDisliked]);
 
   const { data: commentsData } = useQuery(
     ['comments', videoId],
@@ -26,6 +44,8 @@ const Video = () => {
 
   const likeMutation = useMutation(() => videoAPI.likeVideo(videoId), {
     onSuccess: (response) => {
+      setIsLiked(response.data.data.isLiked);
+      setIsDisliked(response.data.data.isDisliked);
       // Update cache without refetching to avoid incrementing views
       queryClient.setQueryData(['video', videoId], (oldData) => {
         if (!oldData) return oldData;
@@ -48,6 +68,8 @@ const Video = () => {
 
   const dislikeMutation = useMutation(() => videoAPI.dislikeVideo(videoId), {
     onSuccess: (response) => {
+      setIsLiked(response.data.data.isLiked);
+      setIsDisliked(response.data.data.isDisliked);
       // Update cache without refetching to avoid incrementing views
       queryClient.setQueryData(['video', videoId], (oldData) => {
         if (!oldData) return oldData;
@@ -69,14 +91,34 @@ const Video = () => {
   });
 
   const commentMutation = useMutation(
-    (content) => videoAPI.addComment(videoId, { content }),
+    (data) => videoAPI.addComment(videoId, data),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['comments', videoId]);
         setComment('');
+        setShowEmojiPicker(false);
+        addToast({ type: 'success', message: 'Comment posted successfully' });
       },
+      onError: () => {
+        addToast({ type: 'error', message: 'Failed to post comment' });
+      }
     }
   );
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return;
+    commentMutation.mutate({ content: comment });
+  };
+
+  const handleReplySubmit = async (content, parentCommentId) => {
+    await videoAPI.addComment(videoId, { content, parentComment: parentCommentId });
+    queryClient.invalidateQueries(['comments', videoId]);
+  };
+
+  const onEmojiSelect = (emoji) => {
+    setComment((prev) => prev + emoji);
+  };
 
   if (isLoading) {
     return (
@@ -87,8 +129,6 @@ const Video = () => {
       </div>
     );
   }
-
-  const video = videoData?.data?.data;
 
   if (!video) {
     return (
@@ -139,18 +179,18 @@ const Video = () => {
                     onClick={() => likeMutation.mutate()}
                     disabled={!isAuthenticated}
                     className={`flex items-center gap-2 px-4 py-2 hover:bg-dark-700 rounded-l-full disabled:opacity-50 transition ${
-                      video.isLiked ? 'text-primary-600' : ''
+                      isLiked ? 'text-primary-500' : 'text-gray-300'
                     }`}
                   >
                     <FaThumbsUp />
-                    <span className="text-sm">{video.likeCount || 0}</span>
+                    <span className="text-sm">{video?.likeCount || 0}</span>
                   </button>
                   <div className="w-px h-6 bg-dark-700"></div>
                   <button
                     onClick={() => dislikeMutation.mutate()}
                     disabled={!isAuthenticated}
                     className={`flex items-center gap-2 px-4 py-2 hover:bg-dark-700 rounded-r-full disabled:opacity-50 transition ${
-                      video.isDisliked ? 'text-primary-600' : ''
+                      isDisliked ? 'text-primary-500' : 'text-gray-300'
                     }`}
                   >
                     <FaThumbsDown />
@@ -209,73 +249,85 @@ const Video = () => {
               </h2>
 
               {isAuthenticated ? (
-                <form onSubmit={(e) => { e.preventDefault(); commentMutation.mutate(comment); }} className="mb-6">
+                <form onSubmit={handleCommentSubmit} className="mb-8">
                   <div className="flex gap-3">
                     <img
                       src={`http://localhost:5000/avatars/${user?.avatar || 'default-avatar.svg'}`}
                       alt="Your avatar"
-                      className="w-10 h-10 rounded-full flex-shrink-0"
+                      className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                       onError={(e) => {
                         e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
                       }}
                     />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        placeholder="Add a comment..."
-                        className="w-full bg-transparent border-b border-dark-700 pb-2 focus:outline-none focus:border-white"
-                      />
-                      <div className="flex justify-end gap-2 mt-2">
+                    <div className="flex-1 relative">
+                      <div className="relative">
+                        <textarea
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          placeholder="Add a comment..."
+                          className="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2.5 pr-10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-600 resize-none"
+                          rows={3}
+                          maxLength={1000}
+                        />
+                        <button
+                          ref={emojiButtonRef}
+                          type="button"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className="absolute right-3 top-3 text-gray-400 hover:text-primary-500 transition-colors"
+                          title="Add emoji"
+                        >
+                          <FaRegSmile className="text-lg" />
+                        </button>
+                      </div>
+
+                      {showEmojiPicker && (
+                        <div className="absolute z-50 mt-2 right-0">
+                          <EmojiPicker
+                            onEmojiSelect={onEmojiSelect}
+                            onClose={() => setShowEmojiPicker(false)}
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex justify-end gap-2 mt-3">
                         <button
                           type="button"
-                          onClick={() => setComment('')}
-                          className="px-4 py-2 text-sm hover:bg-dark-800 rounded-full"
+                          onClick={() => {
+                            setComment('');
+                            setShowEmojiPicker(false);
+                          }}
+                          className="px-4 py-2 text-sm bg-dark-700 hover:bg-dark-600 rounded-lg transition"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={!comment.trim() || commentMutation.isLoading}
-                          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-full text-sm disabled:opacity-50"
+                          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Comment
+                          {commentMutation.isLoading ? 'Posting...' : 'Comment'}
                         </button>
                       </div>
                     </div>
                   </div>
                 </form>
               ) : (
-                <p className="mb-6 text-sm text-gray-400">
-                  <Link to="/login" className="text-primary-600 hover:text-primary-500">
+                <p className="mb-8 text-sm text-gray-400">
+                  <Link to="/login" className="text-primary-600 hover:text-primary-500 font-medium">
                     Sign in
                   </Link>{' '}
                   to leave a comment
                 </p>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-1">
                 {commentsData?.data?.data?.map((comment) => (
-                  <div key={comment._id} className="flex gap-3">
-                    <img
-                      src={`http://localhost:5000/avatars/${comment.user?.avatar || 'default-avatar.svg'}`}
-                      alt={comment.user?.displayName}
-                      className="w-10 h-10 rounded-full flex-shrink-0"
-                      onError={(e) => {
-                        e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
-                      }}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">{comment.user?.displayName}</span>
-                        <span className="text-xs text-gray-400">
-                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                        </span>
-                      </div>
-                      <p className="text-sm">{comment.content}</p>
-                    </div>
-                  </div>
+                  <CommentItem
+                    key={comment._id}
+                    comment={comment}
+                    videoUploaderId={videoData?.data?.data?.uploader?._id}
+                    onReplySubmit={handleReplySubmit}
+                  />
                 ))}
               </div>
             </div>

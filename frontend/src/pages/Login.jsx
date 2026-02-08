@@ -2,16 +2,17 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
-import { FaEnvelope, FaLock, FaShieldAlt } from 'react-icons/fa';
+import useToastStore from '../store/toastStore';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 
 const Login = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const { addToast } = useToastStore();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -23,15 +24,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       const response = await authAPI.login(formData);
       login(response.data.user, response.data.token);
+      addToast({ type: 'success', message: 'Welcome back! Login successful.' });
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || 'Login failed. Please try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -46,18 +50,11 @@ const Login = () => {
         <div className="bg-dark-800 border border-dark-700 p-8 rounded-xl shadow-2xl">
           {/* Header with icon */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 bg-primary-600/10 border border-primary-600/20 rounded-full flex items-center justify-center mb-4">
-              <FaShieldAlt className="text-3xl text-primary-600" />
+            <div className="mb-6">
+              <img src="/logo.png" alt="SecTube Logo" className="h-20 w-auto" />
             </div>
             <h1 className="text-2xl font-semibold text-center">Welcome Back</h1>
-            <p className="text-sm text-gray-400 mt-2">Login to CyberStream</p>
           </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>

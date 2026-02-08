@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
+import useToastStore from '../store/toastStore';
 import { FaSave, FaVideo } from 'react-icons/fa';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -24,6 +25,7 @@ const specialtiesOptions = [
 const Profile = () => {
   const { user, updateUser } = useAuthStore();
   const queryClient = useQueryClient();
+  const { addToast } = useToastStore();
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
     bio: user?.bio || '',
@@ -43,19 +45,16 @@ const Profile = () => {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
 
   const updateMutation = useMutation((data) => authAPI.updateProfile(data), {
     onSuccess: (response) => {
       updateUser(response.data.data);
       queryClient.invalidateQueries('me');
-      setMessage('Profile updated successfully');
-      setTimeout(() => setMessage(''), 3000);
+      addToast({ type: 'success', message: 'Profile updated successfully!' });
     },
     onError: (err) => {
-      setError(err.response?.data?.message || 'Update failed');
+      addToast({ type: 'error', message: err.response?.data?.message || 'Update failed' });
     },
   });
 
@@ -63,11 +62,10 @@ const Profile = () => {
     onSuccess: (response) => {
       updateUser(response.data.data);
       queryClient.invalidateQueries('me');
-      setMessage('Successfully upgraded to streamer account!');
-      setTimeout(() => setMessage(''), 3000);
+      addToast({ type: 'success', message: 'Successfully upgraded to streamer account!' });
     },
     onError: (err) => {
-      setError(err.response?.data?.message || 'Upgrade failed');
+      addToast({ type: 'error', message: err.response?.data?.message || 'Upgrade failed' });
     },
   });
 
@@ -75,11 +73,10 @@ const Profile = () => {
     onSuccess: (response) => {
       updateUser(response.data.data);
       queryClient.invalidateQueries('me');
-      setMessage('Successfully downgraded to viewer account');
-      setTimeout(() => setMessage(''), 3000);
+      addToast({ type: 'success', message: 'Successfully downgraded to viewer account' });
     },
     onError: (err) => {
-      setError(err.response?.data?.message || 'Downgrade failed');
+      addToast({ type: 'error', message: err.response?.data?.message || 'Downgrade failed' });
     },
   });
 
@@ -126,7 +123,6 @@ const Profile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
 
     // Create FormData to support file upload
     const data = new FormData();
@@ -144,7 +140,6 @@ const Profile = () => {
 
   const handleUpgradeSubmit = (e) => {
     e.preventDefault();
-    setError('');
     upgradeMutation.mutate(upgradeData);
   };
 
@@ -165,17 +160,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {message && (
-            <div className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-3 rounded-xl mb-6 text-sm">
-              {message}
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

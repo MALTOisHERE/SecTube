@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Toast from './components/Toast';
 import Home from './pages/Home';
 import Video from './pages/Video';
 import Channel from './pages/Channel';
@@ -15,6 +16,7 @@ function App() {
   return (
     <div className="min-h-screen bg-dark-950 text-white">
       <Navbar />
+      <Toast />
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
