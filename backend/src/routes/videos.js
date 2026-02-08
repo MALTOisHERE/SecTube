@@ -14,7 +14,7 @@ import {
   likeComment,
   searchVideos
 } from '../controllers/videos.js';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { uploadMiddleware } from '../middleware/upload.js';
 
 const router = express.Router();
@@ -42,11 +42,11 @@ const videoMetadataValidation = [
   ])
 ];
 
-// Public routes
+// Public routes (with optional auth to detect logged-in users)
 router.get('/', getVideos);
 router.get('/search', searchVideos);
-router.get('/:videoId', getVideo);
-router.get('/:videoId/comments', getComments);
+router.get('/:videoId', optionalAuth, getVideo);
+router.get('/:videoId/comments', optionalAuth, getComments);
 
 // Protected routes
 router.post('/upload', protect, authorize('streamer', 'admin'), uploadMiddleware, uploadVideo);
@@ -57,7 +57,7 @@ router.post('/:videoId/dislike', protect, dislikeVideo);
 router.post('/:videoId/comments', protect, addComment);
 
 // Comment routes
-router.get('/comments/:commentId/replies', getCommentReplies);
+router.get('/comments/:commentId/replies', optionalAuth, getCommentReplies);
 router.post('/comments/:commentId/like', protect, likeComment);
 
 export default router;

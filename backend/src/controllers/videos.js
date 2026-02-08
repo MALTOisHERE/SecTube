@@ -178,10 +178,24 @@ export const getVideo = async (req, res, next) => {
 
     // Add user interaction data
     const videoObj = video.toObject();
+
+    console.log('🔍 getVideo called - User authenticated?', !!req.user);
+
     if (req.user) {
       videoObj.isLiked = video.likes.some(id => id.toString() === req.user.id.toString());
       videoObj.isDisliked = video.dislikes.some(id => id.toString() === req.user.id.toString());
+
+      // Debug logging
+      console.log('🔍 Backend Like Check:', {
+        userId: req.user.id,
+        videoId: video._id,
+        likesArray: video.likes.map(id => id.toString()),
+        dislikesArray: video.dislikes.map(id => id.toString()),
+        isLiked: videoObj.isLiked,
+        isDisliked: videoObj.isDisliked
+      });
     } else {
+      console.log('⚠️ User NOT logged in - returning isLiked: false');
       videoObj.isLiked = false;
       videoObj.isDisliked = false;
     }
@@ -303,10 +317,10 @@ export const likeVideo = async (req, res, next) => {
     }
 
     // Remove from dislikes if present
-    video.dislikes = video.dislikes.filter(id => id.toString() !== req.user.id);
+    video.dislikes = video.dislikes.filter(id => id.toString() !== req.user.id.toString());
 
     // Toggle like
-    const likeIndex = video.likes.findIndex(id => id.toString() === req.user.id);
+    const likeIndex = video.likes.findIndex(id => id.toString() === req.user.id.toString());
     let isLiked;
 
     if (likeIndex > -1) {
@@ -346,10 +360,10 @@ export const dislikeVideo = async (req, res, next) => {
     }
 
     // Remove from likes if present
-    video.likes = video.likes.filter(id => id.toString() !== req.user.id);
+    video.likes = video.likes.filter(id => id.toString() !== req.user.id.toString());
 
     // Toggle dislike
-    const dislikeIndex = video.dislikes.findIndex(id => id.toString() === req.user.id);
+    const dislikeIndex = video.dislikes.findIndex(id => id.toString() === req.user.id.toString());
     let isDisliked;
 
     if (dislikeIndex > -1) {
@@ -514,7 +528,7 @@ export const likeComment = async (req, res, next) => {
     }
 
     // Check if already liked
-    const likeIndex = comment.likes.indexOf(req.user.id);
+    const likeIndex = comment.likes.findIndex(id => id.toString() === req.user.id.toString());
 
     if (likeIndex > -1) {
       // Already liked, so unlike

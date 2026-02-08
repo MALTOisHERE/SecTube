@@ -33,10 +33,16 @@ const Video = () => {
   // Update local state when video data changes
   useEffect(() => {
     if (video) {
+      console.log('🔍 Video Like State from Backend:', {
+        isLiked: video.isLiked,
+        isDisliked: video.isDisliked,
+        likeCount: video.likeCount,
+        dislikeCount: video.dislikeCount
+      });
       setIsLiked(video.isLiked || false);
       setIsDisliked(video.isDisliked || false);
     }
-  }, [video?.isLiked, video?.isDisliked]);
+  }, [video]);
 
   const { data: commentsData } = useQuery(
     ['comments', videoId],
