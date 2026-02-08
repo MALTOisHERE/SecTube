@@ -121,7 +121,8 @@ export const getCloudinaryVideoUrl = (publicId, quality = 'original') => {
   if (quality === 'original') {
     return cloudinary.url(publicId, {
       resource_type: 'video',
-      secure: true
+      secure: true,
+      format: 'mp4' // Explicitly specify MP4 format
     });
   }
 
@@ -131,8 +132,9 @@ export const getCloudinaryVideoUrl = (publicId, quality = 'original') => {
   return cloudinary.url(publicId, {
     resource_type: 'video',
     transformation: [
-      { width: dimensions.width, height: dimensions.height, crop: 'limit', quality: 'auto' }
+      { width: dimensions.width, height: dimensions.height, crop: 'limit', quality: 'auto', format: 'mp4' }
     ],
-    secure: true
+    secure: true,
+    format: 'mp4' // Explicitly specify MP4 format
   });
 };

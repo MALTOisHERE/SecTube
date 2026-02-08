@@ -13,7 +13,22 @@ const VideoPlayer = ({ video }) => {
 
   // Use highest quality available as default
   const defaultQuality = selectedQuality || qualityKeys[0] || 'original';
-  const videoUrl = getVideoUrl(`/videos/${qualities[defaultQuality] || qualities.original}`);
+  const videoPath = qualities[defaultQuality] || qualities.original;
+
+  // If videoPath is already a full URL (Cloudinary), use as is
+  // Otherwise, prepend /videos/ for local storage
+  const videoUrl = (videoPath && (videoPath.startsWith('http://') || videoPath.startsWith('https://')))
+    ? videoPath
+    : getVideoUrl(`/videos/${videoPath}`);
+
+  // Debug log
+  console.log('Video Player Debug:', {
+    qualities,
+    defaultQuality,
+    videoPath,
+    videoUrl,
+    isCloudinary: videoPath && (videoPath.startsWith('http://') || videoPath.startsWith('https://'))
+  });
 
   return (
     <div className="w-full bg-black rounded-lg overflow-hidden">
