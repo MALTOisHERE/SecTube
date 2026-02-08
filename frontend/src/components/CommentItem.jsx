@@ -5,6 +5,7 @@ import { videoAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
 import EmojiPicker from './EmojiPicker';
+import { getAvatarUrl } from '../config/constants';
 
 const CommentItem = ({ comment, videoUploaderId, onReplySubmit, level = 0 }) => {
   const { user, isAuthenticated } = useAuthStore();
@@ -98,11 +99,11 @@ const CommentItem = ({ comment, videoUploaderId, onReplySubmit, level = 0 }) => 
       <div className="flex gap-3 py-3">
         {/* Avatar */}
         <img
-          src={`http://localhost:5000/avatars/${comment.user.avatar || 'default-avatar.svg'}`}
+          src={getAvatarUrl(comment.user.avatar)}
           alt={comment.user.displayName}
           className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           onError={(e) => {
-            e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
+            e.target.src = getAvatarUrl('default-avatar.svg');
           }}
         />
 

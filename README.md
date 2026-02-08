@@ -1,6 +1,10 @@
-# CyberStream - Cybersecurity Streaming Platform
+# SecTube - Cybersecurity Streaming Platform
 
 A modern video streaming platform designed specifically for cybersecurity enthusiasts, bug hunters, ethical hackers, and security researchers to share knowledge and learn together.
+
+## 🚀 Quick Start
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Render, and MongoDB Atlas.
 
 ## Features
 
@@ -378,6 +382,20 @@ The platform supports the following cybersecurity categories:
 - Intermediate
 - Advanced
 - Expert
+
+## 🌐 Deployment
+
+For detailed deployment instructions for free hosting, see **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+### Quick Deployment Summary
+
+**Free Tier Options:**
+- **Frontend**: Vercel (recommended) or Netlify
+- **Backend**: Render or Railway
+- **Database**: MongoDB Atlas (512MB free)
+- **File Storage**: Cloudinary (25GB free)
+
+See the full deployment guide for step-by-step instructions.
 
 ## Future Enhancements
 

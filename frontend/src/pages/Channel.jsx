@@ -5,6 +5,7 @@ import { userAPI, channelAPI } from '../services/api';
 import VideoCard from '../components/VideoCard';
 import useAuthStore from '../store/authStore';
 import { FaGithub, FaTwitter, FaLinkedin, FaGlobe, FaBug } from 'react-icons/fa';
+import { getAvatarUrl } from '../config/constants';
 
 const Channel = () => {
   const { username } = useParams();
@@ -81,11 +82,11 @@ const Channel = () => {
         <div className="bg-dark-800 rounded-xl p-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
             <img
-              src={`http://localhost:5000/avatars/${channel.avatar || 'default-avatar.svg'}`}
+              src={getAvatarUrl(channel.avatar)}
               alt={channel.displayName}
               className="w-32 h-32 rounded-full"
               onError={(e) => {
-                e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
+                e.target.src = getAvatarUrl('default-avatar.svg');
               }}
             />
 

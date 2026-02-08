@@ -5,6 +5,7 @@ import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
 import { FaSave, FaVideo } from 'react-icons/fa';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { getAvatarUrl } from '../config/constants';
 
 const specialtiesOptions = [
   'Web Application Security',
@@ -169,12 +170,12 @@ const Profile = () => {
                   <img
                     src={
                       avatarPreview ||
-                      `http://localhost:5000/avatars/${user?.avatar || 'default-avatar.svg'}`
+                      getAvatarUrl(user?.avatar)
                     }
                     alt="Avatar"
                     className="w-24 h-24 rounded-full object-cover border-2 border-primary-600/20 shadow-lg"
                     onError={(e) => {
-                      e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
+                      e.target.src = getAvatarUrl('default-avatar.svg');
                     }}
                   />
                   <div className="absolute inset-0 rounded-full border-2 border-primary-600/50 opacity-0 hover:opacity-100 transition"></div>

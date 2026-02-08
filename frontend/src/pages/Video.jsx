@@ -9,6 +9,7 @@ import CommentItem from '../components/CommentItem';
 import EmojiPicker from '../components/EmojiPicker';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
+import { getAvatarUrl } from '../config/constants';
 
 const Video = () => {
   const { videoId } = useParams();
@@ -157,11 +158,11 @@ const Video = () => {
               <div className="flex items-center gap-4">
                 <Link to={`/channel/${video.uploader?.username}`} className="flex items-center gap-3">
                   <img
-                    src={`http://localhost:5000/avatars/${video.uploader?.avatar || 'default-avatar.svg'}`}
+                    src={getAvatarUrl(video.uploader?.avatar)}
                     alt={video.uploader?.displayName}
                     className="w-10 h-10 rounded-full"
                     onError={(e) => {
-                      e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
+                      e.target.src = getAvatarUrl('default-avatar.svg');
                     }}
                   />
                   <div>
@@ -252,11 +253,11 @@ const Video = () => {
                 <form onSubmit={handleCommentSubmit} className="mb-8">
                   <div className="flex gap-3">
                     <img
-                      src={`http://localhost:5000/avatars/${user?.avatar || 'default-avatar.svg'}`}
+                      src={getAvatarUrl(user?.avatar)}
                       alt="Your avatar"
                       className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                       onError={(e) => {
-                        e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
+                        e.target.src = getAvatarUrl('default-avatar.svg');
                       }}
                     />
                     <div className="flex-1 relative">
