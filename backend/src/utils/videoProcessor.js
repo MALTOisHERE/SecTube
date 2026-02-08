@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import Video from '../models/Video.js';
+import { uploadVideoToCloudinary, uploadImageToCloudinary, getCloudinaryVideoUrl } from './cloudinaryUpload.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,7 @@ const thumbnailDir = path.join(__dirname, '../../thumbnails');
   }
 });
 
-export const processVideo = async (videoId, inputPath) => {
+export const processVideo = async (videoId, inputPath, useCloudinary = false) => {
   try {
     console.log(`Processing video ${videoId}...`);
 
@@ -40,6 +41,45 @@ export const processVideo = async (videoId, inputPath) => {
 
     // Update video duration
     video.duration = Math.floor(metadata.duration);
+
+    // If using Cloudinary, upload and let it handle transformations
+    if (useCloudinary) {
+      console.log('Uploading to Cloudinary...');
+
+      // Generate and upload thumbnail if not already uploaded
+      if (!video.thumbnail || video.thumbnail === 'default-thumbnail.jpg') {
+        const thumbnailPath = await generateThumbnail(inputPath, videoId);
+        try {
+          const thumbnailResult = await uploadImageToCloudinary(thumbnailPath, 'sectube/thumbnails');
+          video.thumbnail = thumbnailResult.url;
+          video.thumbnailPublicId = thumbnailResult.publicId;
+        } catch (error) {
+          console.error('Thumbnail upload to Cloudinary failed:', error);
+        }
+      }
+
+      // Upload video to Cloudinary
+      const videoResult = await uploadVideoToCloudinary(inputPath, 'sectube/videos');
+
+      // Store Cloudinary info
+      video.videoFile.cloudinaryPublicId = videoResult.publicId;
+      video.videoFile.cloudinary = true;
+
+      // Generate URLs for different qualities using Cloudinary transformations
+      video.videoFile.processedPaths = {
+        'original': videoResult.url,
+        '360p': getCloudinaryVideoUrl(videoResult.publicId, '360p'),
+        '480p': getCloudinaryVideoUrl(videoResult.publicId, '480p'),
+        '720p': getCloudinaryVideoUrl(videoResult.publicId, '720p'),
+        '1080p': getCloudinaryVideoUrl(videoResult.publicId, '1080p')
+      };
+
+      video.processingStatus = 'ready';
+      await video.save();
+
+      console.log(`Video ${videoId} uploaded to Cloudinary successfully`);
+      return video;
+    }
 
     // Generate thumbnail only if user didn't upload a custom one
     if (!video.thumbnail || video.thumbnail === 'default-thumbnail.jpg') {

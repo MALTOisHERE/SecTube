@@ -1,5 +1,7 @@
 import { validationResult } from 'express-validator';
 import User from '../models/User.js';
+import { uploadImageToCloudinary, deleteFromCloudinary } from '../utils/cloudinaryUpload.js';
+import { isCloudinaryConfigured } from '../config/cloudinary.js';
 
 // Register user
 export const register = async (req, res, next) => {
@@ -115,7 +117,29 @@ export const updateProfile = async (req, res, next) => {
 
     // Handle avatar upload if file provided
     if (req.file) {
-      fieldsToUpdate.avatar = req.file.filename;
+      const useCloudinary = isCloudinaryConfigured();
+
+      if (useCloudinary) {
+        try {
+          // Delete old avatar from Cloudinary if exists
+          const currentUser = await User.findById(req.user.id);
+          if (currentUser.avatarPublicId) {
+            await deleteFromCloudinary(currentUser.avatarPublicId, 'image');
+          }
+
+          // Upload new avatar to Cloudinary
+          const result = await uploadImageToCloudinary(req.file.path, 'sectube/avatars');
+          fieldsToUpdate.avatar = result.url;
+          fieldsToUpdate.avatarPublicId = result.publicId;
+        } catch (error) {
+          console.error('Avatar upload to Cloudinary failed:', error);
+          // Fall back to local filename
+          fieldsToUpdate.avatar = req.file.filename;
+        }
+      } else {
+        // Local storage
+        fieldsToUpdate.avatar = req.file.filename;
+      }
     }
 
     // Remove undefined fields

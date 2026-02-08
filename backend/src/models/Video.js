@@ -25,12 +25,15 @@ const videoSchema = new mongoose.Schema({
       '480p': String,
       '720p': String,
       '1080p': String
-    }
+    },
+    cloudinaryPublicId: String, // For Cloudinary videos
+    cloudinary: Boolean // Flag to indicate if using Cloudinary
   },
   thumbnail: {
     type: String,
     required: true
   },
+  thumbnailPublicId: String, // For Cloudinary thumbnails
   duration: {
     type: Number, // Duration in seconds
     required: true

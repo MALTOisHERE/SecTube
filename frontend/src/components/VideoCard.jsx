@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { FaClock } from 'react-icons/fa';
+import { getAvatarUrl, getThumbnailUrl } from '../config/constants';
 
 const VideoCard = ({ video }) => {
   const formatDuration = (seconds) => {
@@ -25,7 +26,7 @@ const VideoCard = ({ video }) => {
       <Link to={`/video/${video._id}`} className="relative">
         <div className="relative aspect-video bg-dark-800 rounded-xl overflow-hidden mb-3">
           <img
-            src={`http://localhost:5000/thumbnails/${video.thumbnail}`}
+            src={getThumbnailUrl(video.thumbnail)}
             alt={video.title}
             className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
             onError={(e) => {
@@ -44,11 +45,11 @@ const VideoCard = ({ video }) => {
         {/* Channel avatar */}
         <Link to={`/channel/${video.uploader?.username}`} className="flex-shrink-0">
           <img
-            src={`http://localhost:5000/avatars/${video.uploader?.avatar || 'default-avatar.svg'}`}
+            src={getAvatarUrl(video.uploader?.avatar)}
             alt={video.uploader?.displayName}
             className="w-9 h-9 rounded-full"
             onError={(e) => {
-              e.target.src = 'http://localhost:5000/avatars/default-avatar.svg';
+              e.target.src = getAvatarUrl('default-avatar.svg');
             }}
           />
         </Link>

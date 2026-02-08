@@ -3,6 +3,8 @@ import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
 import User from '../models/User.js';
 import { processVideo } from '../utils/videoProcessor.js';
+import { uploadImageToCloudinary, uploadVideoToCloudinary, getCloudinaryVideoUrl } from '../utils/cloudinaryUpload.js';
+import { isCloudinaryConfigured } from '../config/cloudinary.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -30,8 +32,10 @@ export const uploadVideo = async (req, res, next) => {
       visibility
     } = req.body;
 
-    // Create video document
-    const video = await Video.create({
+    // Check if Cloudinary is configured
+    const useCloudinary = isCloudinaryConfigured();
+
+    let videoData = {
       title,
       description,
       uploader: req.user.id,
@@ -40,16 +44,43 @@ export const uploadVideo = async (req, res, next) => {
       difficulty: difficulty || 'Beginner',
       toolsUsed: toolsUsed ? (Array.isArray(toolsUsed) ? toolsUsed : toolsUsed.split(',').map(t => t.trim())) : [],
       visibility: visibility || 'public',
-      videoFile: {
-        originalPath: videoFile.path
-      },
-      thumbnail: thumbnailFile ? thumbnailFile.filename : 'default-thumbnail.jpg',
       duration: 0, // Will be set during processing
       processingStatus: 'processing'
-    });
+    };
 
-    // Process video asynchronously
-    processVideo(video._id, videoFile.path)
+    if (useCloudinary) {
+      // Upload thumbnail to Cloudinary if provided
+      if (thumbnailFile) {
+        try {
+          const thumbnailResult = await uploadImageToCloudinary(thumbnailFile.path, 'sectube/thumbnails');
+          videoData.thumbnail = thumbnailResult.url;
+          videoData.thumbnailPublicId = thumbnailResult.publicId;
+        } catch (error) {
+          console.error('Thumbnail upload to Cloudinary failed:', error);
+          videoData.thumbnail = 'default-thumbnail.jpg';
+        }
+      } else {
+        videoData.thumbnail = 'default-thumbnail.jpg';
+      }
+
+      // Store video path temporarily for processing
+      videoData.videoFile = {
+        originalPath: videoFile.path,
+        cloudinary: true
+      };
+    } else {
+      // Local storage
+      videoData.videoFile = {
+        originalPath: videoFile.path
+      };
+      videoData.thumbnail = thumbnailFile ? thumbnailFile.filename : 'default-thumbnail.jpg';
+    }
+
+    // Create video document
+    const video = await Video.create(videoData);
+
+    // Process video asynchronously (will handle both Cloudinary and local)
+    processVideo(video._id, videoFile.path, useCloudinary)
       .catch(err => console.error('Video processing error:', err));
 
     res.status(201).json({

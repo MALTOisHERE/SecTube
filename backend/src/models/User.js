@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'default-avatar.svg'
   },
+  avatarPublicId: String, // Cloudinary public ID for avatar
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot exceed 500 characters']

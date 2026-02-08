@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getVideoUrl } from '../config/constants';
 
 const VideoPlayer = ({ video }) => {
   const [selectedQuality, setSelectedQuality] = useState(null);
@@ -12,7 +13,7 @@ const VideoPlayer = ({ video }) => {
 
   // Use highest quality available as default
   const defaultQuality = selectedQuality || qualityKeys[0] || 'original';
-  const videoUrl = `http://localhost:5000/videos/${qualities[defaultQuality] || qualities.original}`;
+  const videoUrl = getVideoUrl(`/videos/${qualities[defaultQuality] || qualities.original}`);
 
   return (
     <div className="w-full bg-black rounded-lg overflow-hidden">
