@@ -21,15 +21,6 @@ const VideoPlayer = ({ video }) => {
     ? videoPath
     : getVideoUrl(`/videos/${videoPath}`);
 
-  // Debug log
-  console.log('Video Player Debug:', {
-    qualities,
-    defaultQuality,
-    videoPath,
-    videoUrl,
-    isCloudinary: videoPath && (videoPath.startsWith('http://') || videoPath.startsWith('https://'))
-  });
-
   return (
     <div className="w-full bg-black rounded-lg overflow-hidden">
       <div className="relative">

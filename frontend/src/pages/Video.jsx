@@ -9,7 +9,7 @@ import CommentItem from '../components/CommentItem';
 import EmojiPicker from '../components/EmojiPicker';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { getAvatarUrl } from '../config/constants';
+import { getAvatarUrl, getThumbnailUrl } from '../config/constants';
 
 const Video = () => {
   const { videoId } = useParams();
@@ -23,7 +23,14 @@ const Video = () => {
 
   const { data: videoData, isLoading } = useQuery(
     ['video', videoId],
-    () => videoAPI.getVideo(videoId)
+    () => videoAPI.getVideo(videoId),
+    {
+      refetchInterval: (data) => {
+        // If video is still processing, poll every 3 seconds
+        const status = data?.data?.data?.processingStatus;
+        return status === 'processing' ? 3000 : false;
+      }
+    }
   );
 
   const video = videoData?.data?.data;
@@ -33,12 +40,6 @@ const Video = () => {
   // Update local state when video data changes
   useEffect(() => {
     if (video) {
-      console.log('🔍 Video Like State from Backend:', {
-        isLiked: video.isLiked,
-        isDisliked: video.isDisliked,
-        likeCount: video.likeCount,
-        dislikeCount: video.dislikeCount
-      });
       setIsLiked(video.isLiked || false);
       setIsDisliked(video.isDisliked || false);
     }
@@ -48,6 +49,22 @@ const Video = () => {
     ['comments', videoId],
     () => videoAPI.getComments(videoId)
   );
+
+  // Fetch related videos (same category, excluding current video)
+  const { data: relatedVideosData } = useQuery(
+    ['relatedVideos', video?.category, videoId],
+    () => videoAPI.getVideos({
+      category: video?.category,
+      limit: 10,
+      sort: 'popular'
+    }),
+    {
+      enabled: !!video?.category // Only fetch when we have the video category
+    }
+  );
+
+  // Filter out current video from related videos
+  const relatedVideos = relatedVideosData?.data?.data?.videos?.filter(v => v._id !== videoId) || [];
 
   const likeMutation = useMutation(() => videoAPI.likeVideo(videoId), {
     onSuccess: (response) => {
@@ -141,6 +158,60 @@ const Video = () => {
     return (
       <div className="px-6 py-6 text-center">
         <p className="text-xl text-gray-400">Video not found</p>
+      </div>
+    );
+  }
+
+  // Show processing state
+  if (video.processingStatus === 'processing') {
+    return (
+      <div className="px-6 py-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-dark-800 rounded-xl p-8 text-center">
+            <div className="mb-6">
+              <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+            <h2 className="text-2xl font-bold mb-3">Processing Your Video</h2>
+            <p className="text-gray-400 mb-6">
+              Your video is being processed and will be available shortly. This page will automatically update when processing is complete.
+            </p>
+            <div className="bg-dark-900 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{video.title}</h3>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-400">
+                <span>Category: {video.category}</span>
+                <span>•</span>
+                <span>Difficulty: {video.difficulty}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-sm text-primary-400">
+              <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
+              <span>Processing video... Please wait</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show failed state
+  if (video.processingStatus === 'failed') {
+    return (
+      <div className="px-6 py-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-dark-800 rounded-xl p-8 text-center">
+            <div className="text-red-500 text-5xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold mb-3">Processing Failed</h2>
+            <p className="text-gray-400 mb-4">
+              There was an error processing your video. Please try uploading again or contact support if the issue persists.
+            </p>
+            <Link
+              to="/upload"
+              className="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg transition"
+            >
+              Upload Another Video
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -341,9 +412,44 @@ const Video = () => {
           </div>
 
           {/* Sidebar - Related videos */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block space-y-4">
             <h3 className="text-sm font-medium mb-4">Related videos</h3>
-            {/* Add related videos here */}
+            {relatedVideos.length > 0 ? (
+              <div className="space-y-4">
+                {relatedVideos.slice(0, 8).map((relatedVideo) => (
+                  <Link
+                    key={relatedVideo._id}
+                    to={`/video/${relatedVideo._id}`}
+                    className="flex gap-2 hover:bg-dark-800 p-2 rounded-lg transition"
+                  >
+                    <div className="relative flex-shrink-0 w-40">
+                      <img
+                        src={getThumbnailUrl(relatedVideo.thumbnail)}
+                        alt={relatedVideo.title}
+                        className="w-full aspect-video object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/640x360/1a1a1a/666666?text=No+Thumbnail';
+                        }}
+                      />
+                      <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 px-1 py-0.5 rounded text-xs">
+                        {Math.floor(relatedVideo.duration / 60)}:{(relatedVideo.duration % 60).toString().padStart(2, '0')}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium line-clamp-2 mb-1">{relatedVideo.title}</h4>
+                      <p className="text-xs text-gray-400 mb-1">{relatedVideo.uploader?.displayName}</p>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>{relatedVideo.views >= 1000 ? `${(relatedVideo.views / 1000).toFixed(1)}K` : relatedVideo.views} views</span>
+                        <span>•</span>
+                        <span>{formatDistanceToNow(new Date(relatedVideo.uploadedAt), { addSuffix: true })}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No related videos found</p>
+            )}
           </div>
         </div>
       </div>

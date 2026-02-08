@@ -178,24 +178,10 @@ export const getVideo = async (req, res, next) => {
 
     // Add user interaction data
     const videoObj = video.toObject();
-
-    console.log('🔍 getVideo called - User authenticated?', !!req.user);
-
     if (req.user) {
       videoObj.isLiked = video.likes.some(id => id.toString() === req.user.id.toString());
       videoObj.isDisliked = video.dislikes.some(id => id.toString() === req.user.id.toString());
-
-      // Debug logging
-      console.log('🔍 Backend Like Check:', {
-        userId: req.user.id,
-        videoId: video._id,
-        likesArray: video.likes.map(id => id.toString()),
-        dislikesArray: video.dislikes.map(id => id.toString()),
-        isLiked: videoObj.isLiked,
-        isDisliked: videoObj.isDisliked
-      });
     } else {
-      console.log('⚠️ User NOT logged in - returning isLiked: false');
       videoObj.isLiked = false;
       videoObj.isDisliked = false;
     }
