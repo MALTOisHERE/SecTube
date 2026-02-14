@@ -1,44 +1,57 @@
 import { FaExclamationTriangle } from 'react-icons/fa';
+import Z_INDEX from '../config/zIndex';
 
 const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', type = 'danger' }) => {
   if (!isOpen) return null;
 
   const typeStyles = {
     danger: {
-      icon: 'text-red-600',
-      iconBg: 'bg-red-600/10 border-red-600/20',
-      button: 'bg-red-600 hover:bg-red-700',
+      icon: 'text-red-500',
+      button: 'bg-red-600 hover:bg-red-700 border-red-700',
     },
     warning: {
-      icon: 'text-yellow-600',
-      iconBg: 'bg-yellow-600/10 border-yellow-600/20',
-      button: 'bg-yellow-600 hover:bg-yellow-700',
+      icon: 'text-yellow-500',
+      button: 'bg-yellow-600 hover:bg-yellow-700 border-yellow-700',
     },
     info: {
-      icon: 'text-primary-600',
-      iconBg: 'bg-primary-600/10 border-primary-600/20',
-      button: 'bg-primary-600 hover:bg-primary-700',
+      icon: 'text-primary-500',
+      button: 'bg-primary-600 hover:bg-primary-700 border-primary-700',
     },
   };
 
   const styles = typeStyles[type] || typeStyles.danger;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-dark-800 border border-dark-700 rounded-xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
-        <div className="flex items-center gap-4 mb-4">
-          <div className={`w-12 h-12 ${styles.iconBg} border rounded-lg flex items-center justify-center flex-shrink-0`}>
-            <FaExclamationTriangle className={`text-xl ${styles.icon}`} />
+    <div
+      className="fixed flex items-center justify-center p-4 bg-black bg-opacity-50"
+      onClick={onClose}
+      style={{
+        top: '-50px',
+        left: '-50px',
+        right: '-50px',
+        bottom: '-50px',
+        zIndex: Z_INDEX.MODAL_OVERLAY,
+        position: 'fixed',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
+      }}
+    >
+      <div
+        className="bg-dark-900 border border-dark-800 rounded-md shadow-2xl max-w-md w-full p-5 animate-fadeIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3 mb-4">
+          <FaExclamationTriangle className={`text-lg ${styles.icon} mt-0.5`} />
+          <div>
+            <h3 className="text-base font-semibold text-white mb-1">{title}</h3>
+            <p className="text-sm text-gray-400">{message}</p>
           </div>
-          <h3 className="text-lg font-semibold">{title}</h3>
         </div>
 
-        <p className="text-gray-300 mb-6">{message}</p>
-
-        <div className="flex gap-3 justify-end">
+        <div className="flex gap-2 justify-end mt-5">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-dark-700 hover:bg-dark-600 rounded-lg font-medium transition"
+            className="px-4 py-2 bg-dark-700 hover:bg-dark-600 rounded-md font-medium transition text-sm border border-dark-600"
           >
             {cancelText}
           </button>
@@ -47,7 +60,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 ${styles.button} rounded-lg font-medium transition shadow-lg`}
+            className={`px-4 py-2 ${styles.button} rounded-md font-medium transition text-sm border shadow-sm`}
           >
             {confirmText}
           </button>

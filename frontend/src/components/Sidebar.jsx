@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaHome, FaFire, FaHistory, FaBookmark, FaUser, FaBell } from 'react-icons/fa';
 import useAuthStore from '../store/authStore';
 import useSidebarStore from '../store/sidebarStore';
+import Z_INDEX from '../config/zIndex';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -29,16 +30,18 @@ const Sidebar = () => {
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-60 z-40 top-14"
+          className="fixed inset-0 bg-black bg-opacity-60 top-14"
           onClick={closeSidebar}
+          style={{ zIndex: Z_INDEX.SIDEBAR_OVERLAY }}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-14 bottom-0 bg-dark-900 border-r border-dark-800 border-t border-dark-800 overflow-y-auto transition-all duration-300 z-50 ${
+        className={`fixed left-0 top-14 bottom-0 bg-dark-900 border-r border-dark-800 border-t border-dark-800 overflow-y-auto transition-all duration-300 ${
           isOpen ? 'w-64' : 'w-0'
         }`}
+        style={{ zIndex: Z_INDEX.SIDEBAR }}
       >
       {isOpen && (
         <div className="w-64">
@@ -48,20 +51,20 @@ const Sidebar = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-4 px-6 py-3 hover:bg-dark-800 transition ${
-                index === 0 ? 'pt-4' : ''
+              className={`flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm font-medium ${
+                index === 0 ? 'pt-3' : ''
               } ${
-                isActive(item.path) ? 'bg-dark-800 text-primary-500' : 'text-gray-300'
+                isActive(item.path) ? 'bg-dark-800 text-primary-400 border-l-2 border-primary-500' : 'text-gray-400 border-l-2 border-transparent'
               }`}
             >
-              <item.icon className="text-xl" />
-              <span className="text-sm font-medium">{item.label}</span>
+              <item.icon size={16} />
+              <span>{item.label}</span>
             </Link>
           ))}
         </div>
 
         {/* Separator */}
-        <div className="h-px bg-dark-800 mt-4 mb-4"></div>
+        <div className="h-px bg-dark-800 my-3"></div>
 
         {/* Authenticated User Navigation */}
         {isAuthenticated ? (
@@ -70,23 +73,23 @@ const Sidebar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-4 px-6 py-3 hover:bg-dark-800 transition ${
-                  isActive(item.path) ? 'bg-dark-800 text-primary-500' : 'text-gray-300'
+                className={`flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm font-medium ${
+                  isActive(item.path) ? 'bg-dark-800 text-primary-400 border-l-2 border-primary-500' : 'text-gray-400 border-l-2 border-transparent'
                 }`}
               >
-                <item.icon className="text-xl" />
-                <span className="text-sm font-medium">{item.label}</span>
+                <item.icon size={16} />
+                <span>{item.label}</span>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="px-6 py-3">
-            <p className="text-xs text-gray-400 mb-3">
+          <div className="px-4 py-3">
+            <p className="text-xs text-gray-500 mb-3">
               Sign in to access more features
             </p>
             <Link
               to="/login"
-              className="block text-center bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-lg text-sm font-medium transition"
+              className="block text-center bg-primary-600 hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition border border-primary-700 shadow-sm"
             >
               Sign In
             </Link>

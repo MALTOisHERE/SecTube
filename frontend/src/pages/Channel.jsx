@@ -50,12 +50,12 @@ const Channel = () => {
     return (
       <div className="px-6 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-dark-800 rounded-xl p-8 animate-pulse">
+          <div className="bg-dark-900 rounded-md border border-dark-800 p-6 animate-pulse">
             <div className="flex items-center gap-6">
-              <div className="w-32 h-32 bg-dark-700 rounded-full"></div>
+              <div className="w-28 h-28 bg-dark-800 rounded-full"></div>
               <div className="flex-1 space-y-4">
-                <div className="h-6 bg-dark-700 rounded w-1/4"></div>
-                <div className="h-4 bg-dark-700 rounded w-1/3"></div>
+                <div className="h-5 bg-dark-800 rounded w-1/4"></div>
+                <div className="h-4 bg-dark-800 rounded w-1/3"></div>
               </div>
             </div>
           </div>
@@ -95,20 +95,20 @@ const Channel = () => {
   return (
     <div className="px-6 py-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="bg-dark-800 rounded-xl p-8">
+        <div className="bg-dark-900 rounded-md border border-dark-800 p-6">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
             <img
               src={getAvatarUrl(channel.avatar)}
               alt={channel.displayName}
-              className="w-32 h-32 rounded-full"
+              className="w-28 h-28 rounded-full border border-dark-800"
               onError={(e) => {
                 e.target.src = getAvatarUrl('default-avatar.svg');
               }}
             />
 
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-semibold mb-1">{channel.displayName}</h1>
-              <p className="text-sm text-gray-400 mb-3">@{channel.username}</p>
+              <h1 className="text-2xl font-semibold mb-1">{channel.displayName}</h1>
+              <p className="text-sm text-gray-500 mb-3">@{channel.username}</p>
 
               {channel.bio && <p className="text-sm text-gray-300 mb-4">{channel.bio}</p>}
 
@@ -132,7 +132,7 @@ const Channel = () => {
                     {channel.specialties.map((specialty) => (
                       <span
                         key={specialty}
-                        className="bg-dark-700 px-3 py-1 rounded-full text-xs"
+                        className="bg-dark-800 px-2 py-0.5 rounded text-xs border border-dark-700"
                       >
                         {specialty}
                       </span>
@@ -148,9 +148,9 @@ const Channel = () => {
                       href={channel.socialLinks.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition"
+                      className="text-gray-500 hover:text-gray-300 transition"
                     >
-                      <FaGithub size={20} />
+                      <FaGithub size={18} />
                     </a>
                   )}
                   {channel.socialLinks.twitter && (
@@ -160,7 +160,7 @@ const Channel = () => {
                       rel="noopener noreferrer"
                       className="text-gray-400 hover:text-white transition"
                     >
-                      <FaTwitter size={20} />
+                      <FaTwitter size={18} />
                     </a>
                   )}
                   {channel.socialLinks.linkedin && (
@@ -168,9 +168,9 @@ const Channel = () => {
                       href={channel.socialLinks.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition"
+                      className="text-gray-500 hover:text-gray-300 transition"
                     >
-                      <FaLinkedin size={20} />
+                      <FaLinkedin size={18} />
                     </a>
                   )}
                   {channel.socialLinks.website && (
@@ -178,9 +178,9 @@ const Channel = () => {
                       href={channel.socialLinks.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition"
+                      className="text-gray-500 hover:text-gray-300 transition"
                     >
-                      <FaGlobe size={20} />
+                      <FaGlobe size={18} />
                     </a>
                   )}
                   {channel.socialLinks.hackerone && (
@@ -188,9 +188,9 @@ const Channel = () => {
                       href={channel.socialLinks.hackerone}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition"
+                      className="text-gray-500 hover:text-gray-300 transition"
                     >
-                      <FaBug size={20} />
+                      <FaBug size={18} />
                     </a>
                   )}
                 </div>
@@ -200,15 +200,15 @@ const Channel = () => {
                 <button
                   onClick={handleSubscribe}
                   disabled={!isAuthenticated || subscribeMutation.isLoading}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-full font-medium text-sm transition disabled:opacity-50 ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition disabled:opacity-50 border ${
                     !isAuthenticated
-                      ? 'bg-dark-700 text-gray-500 cursor-not-allowed'
+                      ? 'bg-dark-800 text-gray-500 cursor-not-allowed border-dark-700'
                       : isSubscribed
-                      ? 'bg-dark-700 hover:bg-dark-600 text-gray-300'
-                      : 'bg-primary-600 hover:bg-primary-700 text-white'
+                      ? 'bg-dark-800 hover:bg-dark-700 text-gray-300 border-dark-700'
+                      : 'bg-primary-600 hover:bg-primary-700 text-white border-primary-700 shadow-sm'
                   }`}
                 >
-                  {isSubscribed ? <FaBell /> : <FaRegBell />}
+                  {isSubscribed ? <FaBell size={14} /> : <FaRegBell size={14} />}
                   {isSubscribed ? 'Subscribed' : 'Subscribe'}
                 </button>
               )}

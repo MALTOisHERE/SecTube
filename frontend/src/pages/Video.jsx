@@ -265,7 +265,7 @@ const Video = () => {
     return (
       <div className="px-6 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="aspect-video bg-dark-800 rounded-xl animate-pulse"></div>
+          <div className="aspect-video bg-dark-900 rounded-md animate-pulse border border-dark-800"></div>
         </div>
       </div>
     );
@@ -372,12 +372,12 @@ const Video = () => {
                   <button
                     onClick={handleSubscribeClick}
                     disabled={!isAuthenticated || subscribeMutation.isLoading}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition disabled:opacity-50 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition disabled:opacity-50 text-sm font-medium border ${
                       !isAuthenticated
-                        ? 'bg-dark-700 text-gray-500 cursor-not-allowed'
+                        ? 'bg-dark-800 text-gray-500 cursor-not-allowed border-dark-700'
                         : isSubscribed
-                        ? 'bg-dark-700 hover:bg-dark-600 text-gray-300'
-                        : 'bg-primary-600 hover:bg-primary-700 text-white'
+                        ? 'bg-dark-800 hover:bg-dark-700 text-gray-300 border-dark-700'
+                        : 'bg-primary-600 hover:bg-primary-700 text-white border-primary-700 shadow-sm'
                     }`}
                   >
                     {isSubscribed ? <FaBell /> : <FaRegBell />}
@@ -388,45 +388,47 @@ const Video = () => {
                 )}
               </div>
 
-              {/* Separator */}
-              <div className="h-8 w-px bg-dark-700"></div>
+              {/* Separator - only show when subscribe button is visible */}
+              {user?._id !== video.uploader?._id && (
+                <div className="h-8 w-px bg-dark-700"></div>
+              )}
 
               <div className="flex items-center gap-2">
-                <div className="flex items-center bg-dark-800 rounded-full">
+                <div className="flex items-center bg-dark-900 rounded-md border border-dark-700">
                   <button
                     onClick={() => likeMutation.mutate()}
                     disabled={!isAuthenticated}
-                    className={`flex items-center gap-2 px-4 py-2 hover:bg-dark-700 rounded-l-full disabled:opacity-50 transition ${
-                      isLiked ? 'text-primary-500' : 'text-gray-300'
+                    className={`flex items-center gap-2 px-3 py-1.5 hover:bg-dark-800 rounded-l-md disabled:opacity-50 transition text-sm font-medium ${
+                      isLiked ? 'text-primary-500' : 'text-gray-400'
                     }`}
                   >
-                    <FaThumbsUp />
-                    <span className="text-sm">{video?.likeCount || 0}</span>
+                    <FaThumbsUp size={14} />
+                    <span>{video?.likeCount || 0}</span>
                   </button>
-                  <div className="w-px h-6 bg-dark-700"></div>
+                  <div className="w-px h-5 bg-dark-700"></div>
                   <button
                     onClick={() => dislikeMutation.mutate()}
                     disabled={!isAuthenticated}
-                    className={`flex items-center gap-2 px-4 py-2 hover:bg-dark-700 rounded-r-full disabled:opacity-50 transition ${
-                      isDisliked ? 'text-primary-500' : 'text-gray-300'
+                    className={`flex items-center gap-2 px-3 py-1.5 hover:bg-dark-800 rounded-r-md disabled:opacity-50 transition text-sm ${
+                      isDisliked ? 'text-primary-500' : 'text-gray-400'
                     }`}
                   >
-                    <FaThumbsDown />
+                    <FaThumbsDown size={14} />
                   </button>
                 </div>
 
                 <div className="relative" ref={shareButtonRef}>
                   <button
                     onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="flex items-center gap-2 bg-dark-800 hover:bg-dark-700 px-4 py-2 rounded-full transition"
+                    className="flex items-center gap-2 bg-dark-900 hover:bg-dark-800 px-3 py-1.5 rounded-md transition border border-dark-700 text-sm font-medium text-gray-400"
                   >
-                    <FaShare />
-                    <span className="text-sm">Share</span>
+                    <FaShare size={14} />
+                    <span>Share</span>
                   </button>
 
                   {/* Share dropdown menu */}
                   {showShareMenu && (
-                    <div className={`absolute right-0 ${getDropdownClasses(shareMenuPosition)} w-56 bg-dark-800 rounded-xl shadow-xl border border-dark-700 py-2 z-50`}>
+                    <div className={`absolute right-0 ${getDropdownClasses(shareMenuPosition)} w-56 bg-dark-900 rounded-md shadow-xl border border-dark-700 py-2 z-50`}>
                       <button
                         onClick={handleCopyLink}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
@@ -477,14 +479,14 @@ const Video = () => {
             </div>
 
             {/* Description */}
-            <div className="bg-dark-800 rounded-xl p-4 mb-4">
+            <div className="bg-dark-900 rounded-md border border-dark-800 p-4 mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <span>{video.views} views</span>
                 <span>•</span>
                 <span>{formatDistanceToNow(new Date(video.uploadedAt), { addSuffix: true })}</span>
                 <span>•</span>
-                <span className="bg-dark-700 px-2 py-0.5 rounded">{video.category}</span>
-                <span className="bg-dark-700 px-2 py-0.5 rounded">{video.difficulty}</span>
+                <span className="bg-dark-800 px-2 py-0.5 rounded text-xs border border-dark-700">{video.category}</span>
+                <span className="bg-dark-800 px-2 py-0.5 rounded text-xs border border-dark-700">{video.difficulty}</span>
               </div>
 
               <div className={`text-sm ${!showDescription && 'line-clamp-2'}`}>
@@ -505,7 +507,7 @@ const Video = () => {
                   <div className="text-sm font-medium mb-2">Tools used:</div>
                   <div className="flex flex-wrap gap-2">
                     {video.toolsUsed.map((tool) => (
-                      <span key={tool} className="bg-dark-700 px-2 py-1 rounded text-xs">
+                      <span key={tool} className="bg-dark-800 px-2 py-0.5 rounded text-xs border border-dark-700">
                         {tool}
                       </span>
                     ))}
@@ -537,7 +539,7 @@ const Video = () => {
                           value={comment}
                           onChange={(e) => setComment(e.target.value)}
                           placeholder="Add a comment..."
-                          className="w-full bg-dark-900 border border-dark-700 rounded-lg px-3 py-2.5 pr-10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-600 resize-none"
+                          className="w-full bg-dark-900 border border-dark-700 rounded-md px-3 py-2 pr-10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-none"
                           rows={3}
                           maxLength={1000}
                         />
@@ -568,14 +570,14 @@ const Video = () => {
                             setComment('');
                             setShowEmojiPicker(false);
                           }}
-                          className="px-4 py-2 text-sm bg-dark-700 hover:bg-dark-600 rounded-lg transition"
+                          className="px-3 py-1.5 text-sm bg-dark-800 hover:bg-dark-700 rounded-md transition border border-dark-700 font-medium"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={!comment.trim() || commentMutation.isLoading}
-                          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed border border-primary-700 shadow-sm"
                         >
                           {commentMutation.isLoading ? 'Posting...' : 'Comment'}
                         </button>

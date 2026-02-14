@@ -44,25 +44,22 @@ const Register = () => {
   };
 
   return (
-    <div className="px-6 py-12 min-h-[85vh] flex items-center justify-center relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 via-transparent to-transparent pointer-events-none"></div>
-
-      <div className="relative w-full max-w-md">
-        <div className="bg-dark-800 border border-dark-700 p-8 rounded-xl shadow-2xl">
+    <div className="px-6 py-12 min-h-[85vh] flex items-center justify-center">
+      <div className="w-full max-w-sm">
+        <div className="bg-dark-900 border border-dark-800 p-6 rounded-md shadow-lg">
           {/* Header with icon */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="mb-6">
-              <img src="/logo.png" alt="SecTube Logo" className="h-20 w-auto" />
+          <div className="flex flex-col items-center mb-6">
+            <div className="mb-4">
+              <img src="/logo.png" alt="SecTube Logo" className="h-16 w-auto" />
             </div>
-            <h1 className="text-2xl font-semibold text-center">Create Account</h1>
+            <h1 className="text-xl font-semibold text-center text-white">Create your account</h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">Username</label>
-              <div className="relative group">
-                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-primary-600 transition" />
+              <div className="relative">
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
                 <input
                   type="text"
                   name="username"
@@ -70,7 +67,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   pattern="[a-zA-Z0-9_-]+"
-                  className="w-full bg-dark-900 border border-dark-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
+                  className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                   placeholder="username"
                 />
               </div>
@@ -79,14 +76,14 @@ const Register = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">Display Name</label>
-              <div className="relative group">
-                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-primary-600 transition" />
+              <div className="relative">
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
                 <input
                   type="text"
                   name="displayName"
                   value={formData.displayName}
                   onChange={handleChange}
-                  className="w-full bg-dark-900 border border-dark-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
+                  className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                   placeholder="Your Name"
                 />
               </div>
@@ -94,15 +91,15 @@ const Register = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">Email</label>
-              <div className="relative group">
-                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-primary-600 transition" />
+              <div className="relative">
+                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full bg-dark-900 border border-dark-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
+                  className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                   placeholder="your@email.com"
                 />
               </div>
@@ -110,8 +107,8 @@ const Register = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">Password</label>
-              <div className="relative group">
-                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-primary-600 transition" />
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
                 <input
                   type="password"
                   name="password"
@@ -119,7 +116,7 @@ const Register = () => {
                   onChange={handleChange}
                   required
                   minLength="6"
-                  className="w-full bg-dark-900 border border-dark-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
+                  className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                   placeholder="••••••••"
                 />
               </div>
@@ -129,17 +126,17 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 py-3 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20 mt-6"
+              className="w-full bg-primary-600 hover:bg-primary-700 py-2 rounded-md font-medium text-sm transition disabled:opacity-50 disabled:cursor-not-allowed border border-primary-700 shadow-sm mt-4"
             >
-              {loading ? 'Creating account...' : 'Sign Up'}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-dark-700">
+          <div className="mt-6 pt-5 border-t border-dark-800">
             <p className="text-center text-sm text-gray-400">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary-600 hover:text-primary-500 font-medium">
-                Login
+              <Link to="/login" className="text-primary-500 hover:text-primary-400 font-medium">
+                Sign in
               </Link>
             </p>
           </div>

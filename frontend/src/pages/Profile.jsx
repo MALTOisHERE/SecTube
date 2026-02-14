@@ -3,9 +3,15 @@ import { useMutation, useQueryClient } from 'react-query';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaSave, FaVideo } from 'react-icons/fa';
+import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug } from 'react-icons/fa';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getAvatarUrl } from '../config/constants';
+import PageHeader from '../components/PageHeader';
+import Card from '../components/Card';
+import Input from '../components/Input';
+import Textarea from '../components/Textarea';
+import FileUpload from '../components/FileUpload';
+import Button from '../components/Button';
 
 const specialtiesOptions = [
   'Web Application Security',
@@ -147,96 +153,65 @@ const Profile = () => {
   return (
     <div className="px-6 py-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-dark-800 rounded-xl p-8">
-          <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-800">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center">
-              <FaSave className="text-2xl text-primary-500" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Profile Settings</h1>
-              <p className="text-sm text-gray-400 mt-1">Manage your account information</p>
-            </div>
-          </div>
-
+        <Card>
+          <PageHeader
+            icon={FaSave}
+            title="Profile Settings"
+            subtitle="Manage your account information"
+          />
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-3 text-gray-300">Profile Picture</label>
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  <img
-                    src={
-                      avatarPreview ||
-                      getAvatarUrl(user?.avatar)
-                    }
-                    alt="Avatar"
-                    className="w-24 h-24 rounded-full object-cover border-2 border-primary-600/20 shadow-lg"
-                    onError={(e) => {
-                      e.target.src = getAvatarUrl('default-avatar.svg');
-                    }}
-                  />
-                  <div className="absolute inset-0 rounded-full border-2 border-primary-600/50 opacity-0 hover:opacity-100 transition"></div>
-                </div>
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                    id="avatar-upload"
-                  />
-                  <label
-                    htmlFor="avatar-upload"
-                    className="cursor-pointer bg-dark-700 hover:bg-dark-600 px-5 py-2.5 rounded-lg transition inline-block text-sm font-semibold"
-                  >
-                    Choose Avatar
-                  </label>
-                  <p className="text-xs text-gray-500 mt-2">
-                    JPG, PNG, GIF (Max 5MB)
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Avatar Upload */}
+            <FileUpload
+              label="Profile Picture"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              previewUrl={
+                avatarPreview ||
+                getAvatarUrl(user?.avatar)
+              }
+              helpText="JPG, PNG, GIF (Max 5MB)"
+              variant="avatar"
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-3 text-gray-300">Display Name</label>
-              <input
-                type="text"
-                name="displayName"
-                value={formData.displayName}
-                onChange={handleChange}
-                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-              />
-            </div>
+            {/* Display Name */}
+            <Input
+              label="Display Name"
+              type="text"
+              name="displayName"
+              value={formData.displayName}
+              onChange={handleChange}
+              icon={FaUser}
+              placeholder="Your display name"
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-3 text-gray-300">Bio</label>
-              <textarea
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                rows={4}
-                maxLength={500}
-                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition resize-none text-white placeholder-gray-500"
-                placeholder="Tell us about yourself..."
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                {formData.bio.length}/500 characters
-              </p>
-            </div>
+            {/* Bio */}
+            <Textarea
+              label="Bio"
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              rows={4}
+              maxLength={500}
+              placeholder="Tell us about yourself..."
+              showCount
+            />
 
+            {/* Specialties */}
             <div>
-              <label className="block text-sm font-medium mb-2">Specialties</label>
+              <label className="block text-sm font-medium mb-2 text-gray-300">
+                Specialties
+              </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {specialtiesOptions.map((specialty) => (
                   <button
                     key={specialty}
                     type="button"
                     onClick={() => handleSpecialtyToggle(specialty)}
-                    className={`px-3 py-2 rounded-lg text-sm transition ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition border ${
                       formData.specialties.includes(specialty)
-                        ? 'bg-primary-600 hover:bg-primary-700'
-                        : 'bg-dark-700 hover:bg-dark-600'
+                        ? 'bg-primary-600 hover:bg-primary-700 text-white border-primary-700'
+                        : 'bg-dark-900 hover:bg-dark-800 text-gray-300 border-dark-700'
                     }`}
                   >
                     {specialty}
@@ -245,153 +220,150 @@ const Profile = () => {
               </div>
             </div>
 
+            {/* Social Links */}
             <div>
-              <h3 className="text-base font-medium mb-4 text-gray-300">Social Links</h3>
+              <h3 className="text-base font-semibold mb-3 text-gray-200">Social Links</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Twitter</label>
-                  <input
-                    type="url"
-                    name="social_twitter"
-                    value={formData.socialLinks.twitter}
-                    onChange={handleChange}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                    placeholder="https://twitter.com/username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">GitHub</label>
-                  <input
-                    type="url"
-                    name="social_github"
-                    value={formData.socialLinks.github}
-                    onChange={handleChange}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                    placeholder="https://github.com/username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">LinkedIn</label>
-                  <input
-                    type="url"
-                    name="social_linkedin"
-                    value={formData.socialLinks.linkedin}
-                    onChange={handleChange}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                    placeholder="https://linkedin.com/in/username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Website</label>
-                  <input
-                    type="url"
-                    name="social_website"
-                    value={formData.socialLinks.website}
-                    onChange={handleChange}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                    placeholder="https://yourwebsite.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">HackerOne</label>
-                  <input
-                    type="url"
-                    name="social_hackerone"
-                    value={formData.socialLinks.hackerone}
-                    onChange={handleChange}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                    placeholder="https://hackerone.com/username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-400">Bugcrowd</label>
-                  <input
-                    type="url"
-                    name="social_bugcrowd"
-                    value={formData.socialLinks.bugcrowd}
-                    onChange={handleChange}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                    placeholder="https://bugcrowd.com/username"
-                  />
-                </div>
+                <Input
+                  label="Twitter"
+                  type="url"
+                  name="social_twitter"
+                  value={formData.socialLinks.twitter}
+                  onChange={handleChange}
+                  icon={FaTwitter}
+                  placeholder="https://twitter.com/username"
+                />
+
+                <Input
+                  label="GitHub"
+                  type="url"
+                  name="social_github"
+                  value={formData.socialLinks.github}
+                  onChange={handleChange}
+                  icon={FaGithub}
+                  placeholder="https://github.com/username"
+                />
+
+                <Input
+                  label="LinkedIn"
+                  type="url"
+                  name="social_linkedin"
+                  value={formData.socialLinks.linkedin}
+                  onChange={handleChange}
+                  icon={FaLinkedin}
+                  placeholder="https://linkedin.com/in/username"
+                />
+
+                <Input
+                  label="Website"
+                  type="url"
+                  name="social_website"
+                  value={formData.socialLinks.website}
+                  onChange={handleChange}
+                  icon={FaGlobe}
+                  placeholder="https://yourwebsite.com"
+                />
+
+                <Input
+                  label="HackerOne"
+                  type="url"
+                  name="social_hackerone"
+                  value={formData.socialLinks.hackerone}
+                  onChange={handleChange}
+                  icon={FaBug}
+                  placeholder="https://hackerone.com/username"
+                />
+
+                <Input
+                  label="Bugcrowd"
+                  type="url"
+                  name="social_bugcrowd"
+                  value={formData.socialLinks.bugcrowd}
+                  onChange={handleChange}
+                  icon={FaBug}
+                  placeholder="https://bugcrowd.com/username"
+                />
               </div>
             </div>
 
-            <button
+            {/* Save Button */}
+            <Button
               type="submit"
               disabled={updateMutation.isLoading}
-              className="w-full bg-primary-600 hover:bg-primary-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 text-base"
+              loading={updateMutation.isLoading}
+              icon={FaSave}
+              fullWidth
+              size="lg"
             >
-              <FaSave />
-              <span>{updateMutation.isLoading ? 'Saving...' : 'Save Changes'}</span>
-            </button>
+              {updateMutation.isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
           </form>
-        </div>
+        </Card>
 
+        {/* Upgrade/Downgrade Section */}
         {!user?.isStreamer ? (
-          <div className="bg-dark-800 rounded-xl p-8">
-            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center">
-                <FaVideo className="text-2xl text-primary-500" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">Become a Streamer</h2>
-                <p className="text-sm text-gray-400 mt-1">Share your knowledge with the community</p>
-              </div>
-            </div>
+          <Card>
+            <PageHeader
+              icon={FaVideo}
+              title="Become a Streamer"
+              subtitle="Share your knowledge with the community"
+            />
+
             <p className="text-gray-300 mb-6">
               Upgrade your account to start uploading videos and sharing your cybersecurity expertise with thousands of enthusiasts worldwide.
             </p>
 
             <form onSubmit={handleUpgradeSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-3 text-gray-300">Channel Name</label>
-                <input
-                  type="text"
-                  value={upgradeData.channelName}
-                  onChange={(e) => setUpgradeData({ ...upgradeData, channelName: e.target.value })}
-                  required
-                  className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-600 focus:bg-dark-800 transition text-white placeholder-gray-500"
-                  placeholder="Your channel name"
-                />
-              </div>
+              <Input
+                label="Channel Name"
+                required
+                type="text"
+                value={upgradeData.channelName}
+                onChange={(e) => setUpgradeData({ ...upgradeData, channelName: e.target.value })}
+                placeholder="Your channel name"
+              />
 
-              <button
+              <Button
                 type="submit"
                 disabled={upgradeMutation.isLoading}
-                className="w-full bg-primary-600 hover:bg-primary-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 text-base"
+                loading={upgradeMutation.isLoading}
+                icon={FaVideo}
+                fullWidth
+                size="lg"
               >
                 {upgradeMutation.isLoading ? 'Upgrading...' : 'Upgrade to Streamer'}
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
         ) : (
-          <div className="bg-dark-800 rounded-xl p-8">
-            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
-              <div className="w-14 h-14 bg-gradient-to-br from-red-600/20 to-red-500/10 rounded-xl flex items-center justify-center">
-                <FaVideo className="text-2xl text-red-500" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">Streamer Account</h2>
-                <p className="text-sm text-gray-400 mt-1">Manage your content creator status</p>
-              </div>
-            </div>
+          <Card>
+            <PageHeader
+              icon={FaVideo}
+              title="Streamer Account"
+              subtitle="Manage your content creator status"
+              variant="danger"
+            />
+
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
               <p className="text-sm text-yellow-200">
                 <strong>Warning:</strong> Downgrading to a viewer account will remove your ability to upload videos. Your existing videos will remain public, but you won't be able to upload new ones.
               </p>
             </div>
 
-            <button
+            <Button
               onClick={() => setShowDowngradeConfirm(true)}
               disabled={downgradeMutation.isLoading}
-              className="w-full bg-red-600 hover:bg-red-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 text-base"
+              loading={downgradeMutation.isLoading}
+              variant="danger"
+              fullWidth
+              size="lg"
             >
               {downgradeMutation.isLoading ? 'Downgrading...' : 'Downgrade to Viewer'}
-            </button>
-          </div>
+            </Button>
+          </Card>
         )}
 
+        {/* Downgrade Confirmation Dialog */}
         <ConfirmDialog
           isOpen={showDowngradeConfirm}
           onClose={() => setShowDowngradeConfirm(false)}
