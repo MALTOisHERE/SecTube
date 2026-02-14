@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
 import Home from './pages/Home';
 import Video from './pages/Video';
@@ -11,11 +12,15 @@ import Profile from './pages/Profile';
 import Browse from './pages/Browse';
 import Search from './pages/Search';
 import ProtectedRoute from './components/ProtectedRoute';
+import useSidebarStore from './store/sidebarStore';
 
 function App() {
+  const { isOpen } = useSidebarStore();
+
   return (
     <div className="min-h-screen bg-dark-950 text-white">
       <Navbar />
+      <Sidebar />
       <Toast />
       <main>
         <Routes>

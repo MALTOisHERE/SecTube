@@ -4,12 +4,14 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { userAPI, channelAPI } from '../services/api';
 import VideoCard from '../components/VideoCard';
 import useAuthStore from '../store/authStore';
-import { FaGithub, FaTwitter, FaLinkedin, FaGlobe, FaBug } from 'react-icons/fa';
+import useToastStore from '../store/toastStore';
+import { FaGithub, FaTwitter, FaLinkedin, FaGlobe, FaBug, FaBell, FaRegBell } from 'react-icons/fa';
 import { getAvatarUrl } from '../config/constants';
 
 const Channel = () => {
   const { username } = useParams();
   const { isAuthenticated, user } = useAuthStore();
+  const { addToast } = useToastStore();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
@@ -24,16 +26,23 @@ const Channel = () => {
   );
 
   const subscribeMutation = useMutation(
-    () => userAPI.subscribe(channelData?.data?.data?._id),
+    () => isSubscribed
+      ? userAPI.unsubscribe(channelData?.data?.data?._id)
+      : userAPI.subscribe(channelData?.data?.data?._id),
     {
-      onSuccess: () => queryClient.invalidateQueries(['channel', username]),
-    }
-  );
-
-  const unsubscribeMutation = useMutation(
-    () => userAPI.unsubscribe(channelData?.data?.data?._id),
-    {
-      onSuccess: () => queryClient.invalidateQueries(['channel', username]),
+      onSuccess: () => {
+        queryClient.invalidateQueries(['channel', username]);
+        addToast({
+          type: isSubscribed ? 'info' : 'success',
+          message: isSubscribed ? 'Unsubscribed successfully!' : 'Subscribed successfully!'
+        });
+      },
+      onError: (error) => {
+        addToast({
+          type: 'error',
+          message: error.response?.data?.message || 'Failed to update subscription'
+        });
+      }
     }
   );
 
@@ -66,14 +75,21 @@ const Channel = () => {
   }
 
   const isOwnChannel = user?.username === channel.username;
-  const isSubscribed = channel.subscribers?.some((sub) => sub._id === user?.id);
+  const isSubscribed = channel.subscribers?.some((sub) => {
+    const subId = typeof sub === 'object' ? (sub._id || sub.id) : sub;
+    const currentUserId = user?._id || user?.id;
+    return String(subId) === String(currentUserId);
+  }) || false;
 
   const handleSubscribe = () => {
-    if (isSubscribed) {
-      unsubscribeMutation.mutate();
-    } else {
-      subscribeMutation.mutate();
+    if (!isAuthenticated) {
+      addToast({
+        type: 'warning',
+        message: 'Please login to subscribe to this channel'
+      });
+      return;
     }
+    subscribeMutation.mutate();
   };
 
   return (
@@ -180,16 +196,19 @@ const Channel = () => {
                 </div>
               )}
 
-              {!isOwnChannel && isAuthenticated && (
+              {!isOwnChannel && (
                 <button
                   onClick={handleSubscribe}
-                  disabled={subscribeMutation.isLoading || unsubscribeMutation.isLoading}
-                  className={`px-6 py-2 rounded-full font-medium text-sm transition disabled:opacity-50 ${
-                    isSubscribed
-                      ? 'bg-dark-700 hover:bg-dark-600'
-                      : 'bg-primary-600 hover:bg-primary-700'
+                  disabled={!isAuthenticated || subscribeMutation.isLoading}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-full font-medium text-sm transition disabled:opacity-50 ${
+                    !isAuthenticated
+                      ? 'bg-dark-700 text-gray-500 cursor-not-allowed'
+                      : isSubscribed
+                      ? 'bg-dark-700 hover:bg-dark-600 text-gray-300'
+                      : 'bg-primary-600 hover:bg-primary-700 text-white'
                   }`}
                 >
+                  {isSubscribed ? <FaBell /> : <FaRegBell />}
                   {isSubscribed ? 'Subscribed' : 'Subscribe'}
                 </button>
               )}

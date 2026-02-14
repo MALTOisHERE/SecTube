@@ -2,14 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile } from 'react-icons/fa';
-import { videoAPI } from '../services/api';
+import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile, FaBell, FaRegBell, FaTwitter, FaLinkedin, FaFacebook, FaWhatsapp, FaTelegram, FaCopy, FaCheck } from 'react-icons/fa';
+import { videoAPI, userAPI } from '../services/api';
 import VideoPlayer from '../components/VideoPlayer';
 import CommentItem from '../components/CommentItem';
 import EmojiPicker from '../components/EmojiPicker';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
 import { getAvatarUrl, getThumbnailUrl } from '../config/constants';
+import { useDropdownPosition, getDropdownClasses } from '../hooks/useDropdownPosition';
 
 const Video = () => {
   const { videoId } = useParams();
@@ -19,7 +20,10 @@ const Video = () => {
   const [comment, setComment] = useState('');
   const [showDescription, setShowDescription] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const emojiButtonRef = useRef(null);
+  const shareButtonRef = useRef(null);
 
   const { data: videoData, isLoading } = useQuery(
     ['video', videoId],
@@ -36,14 +40,25 @@ const Video = () => {
   const video = videoData?.data?.data;
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   // Update local state when video data changes
   useEffect(() => {
     if (video) {
       setIsLiked(video.isLiked || false);
       setIsDisliked(video.isDisliked || false);
+      // Check if current user is subscribed to the uploader
+      if (user && video.uploader?.subscribers) {
+        const currentUserId = user._id || user.id;
+        setIsSubscribed(video.uploader.subscribers.some(sub => {
+          const subId = typeof sub === 'object' ? (sub._id || sub.id) : sub;
+          return String(subId) === String(currentUserId);
+        }));
+      } else {
+        setIsSubscribed(false);
+      }
     }
-  }, [video]);
+  }, [video, user]);
 
   const { data: commentsData } = useQuery(
     ['comments', videoId],
@@ -64,7 +79,11 @@ const Video = () => {
   );
 
   // Filter out current video from related videos
-  const relatedVideos = relatedVideosData?.data?.data?.videos?.filter(v => v._id !== videoId) || [];
+  const relatedVideos = (relatedVideosData?.data?.data || []).filter(v => v._id !== videoId);
+
+  // Calculate dropdown positions
+  const shareMenuPosition = useDropdownPosition(shareButtonRef, showShareMenu, 350);
+  const emojiPickerPosition = useDropdownPosition(emojiButtonRef, showEmojiPicker, 300);
 
   const likeMutation = useMutation(() => videoAPI.likeVideo(videoId), {
     onSuccess: (response) => {
@@ -129,6 +148,90 @@ const Video = () => {
     }
   );
 
+  const subscribeMutation = useMutation(
+    () => isSubscribed
+      ? userAPI.unsubscribe(video.uploader._id)
+      : userAPI.subscribe(video.uploader._id),
+    {
+      onMutate: async () => {
+        // Cancel outgoing refetches
+        await queryClient.cancelQueries(['video', videoId]);
+
+        // Optimistically update the UI
+        const previousSubscribed = isSubscribed;
+        const wasSubscribed = isSubscribed;
+        setIsSubscribed(!isSubscribed);
+
+        return { previousSubscribed, wasSubscribed };
+      },
+      onSuccess: (data, variables, context) => {
+        // Refetch to get updated subscriber count
+        queryClient.invalidateQueries(['video', videoId]);
+        addToast({
+          type: context.wasSubscribed ? 'info' : 'success',
+          message: context.wasSubscribed ? 'Unsubscribed successfully' : 'Subscribed successfully'
+        });
+      },
+      onError: (error, variables, context) => {
+        // Revert on error
+        if (context?.previousSubscribed !== undefined) {
+          setIsSubscribed(context.previousSubscribed);
+        }
+        addToast({
+          type: 'error',
+          message: error.response?.data?.message || 'Failed to update subscription'
+        });
+      }
+    }
+  );
+
+  const handleSubscribeClick = () => {
+    if (!isAuthenticated) {
+      addToast({
+        type: 'warning',
+        message: 'Please login to subscribe to this channel'
+      });
+      return;
+    }
+    subscribeMutation.mutate();
+  };
+
+  const handleCopyLink = async () => {
+    const videoUrl = window.location.href;
+    try {
+      await navigator.clipboard.writeText(videoUrl);
+      setLinkCopied(true);
+      addToast({
+        type: 'success',
+        message: 'Link copied to clipboard!'
+      });
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (error) {
+      addToast({
+        type: 'error',
+        message: 'Failed to copy link'
+      });
+    }
+  };
+
+  const handleShare = (platform) => {
+    const videoUrl = window.location.href;
+    const videoTitle = video?.title || 'Check out this video';
+
+    const shareUrls = {
+      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(videoTitle)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(videoUrl)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(videoTitle + ' ' + videoUrl)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(videoTitle)}`
+    };
+
+    if (shareUrls[platform]) {
+      window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+      setShowShareMenu(false);
+    }
+  };
+
   const handleCommentSubmit = (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
@@ -143,6 +246,20 @@ const Video = () => {
   const onEmojiSelect = (emoji) => {
     setComment((prev) => prev + emoji);
   };
+
+  // Close share menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareButtonRef.current && !shareButtonRef.current.contains(event.target)) {
+        setShowShareMenu(false);
+      }
+    };
+
+    if (showShareMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showShareMenu]);
 
   if (isLoading) {
     return (
@@ -218,10 +335,10 @@ const Video = () => {
 
   return (
     <div className="px-6 py-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-9">
             {/* Video player */}
             <div className="mb-4">
               <VideoPlayer video={video} />
@@ -231,8 +348,8 @@ const Video = () => {
             <h1 className="text-xl font-semibold mb-3">{video.title}</h1>
 
             {/* Video info */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <div className="flex items-center justify-between flex-1">
                 <Link to={`/channel/${video.uploader?.username}`} className="flex items-center gap-3">
                   <img
                     src={getAvatarUrl(video.uploader?.avatar)}
@@ -249,7 +366,30 @@ const Video = () => {
                     </div>
                   </div>
                 </Link>
+
+                {/* Subscribe button - show for all non-owners, grayed if not authenticated */}
+                {user?._id !== video.uploader?._id && (
+                  <button
+                    onClick={handleSubscribeClick}
+                    disabled={!isAuthenticated || subscribeMutation.isLoading}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition disabled:opacity-50 ${
+                      !isAuthenticated
+                        ? 'bg-dark-700 text-gray-500 cursor-not-allowed'
+                        : isSubscribed
+                        ? 'bg-dark-700 hover:bg-dark-600 text-gray-300'
+                        : 'bg-primary-600 hover:bg-primary-700 text-white'
+                    }`}
+                  >
+                    {isSubscribed ? <FaBell /> : <FaRegBell />}
+                    <span className="text-sm font-medium">
+                      {isSubscribed ? 'Subscribed' : 'Subscribe'}
+                    </span>
+                  </button>
+                )}
               </div>
+
+              {/* Separator */}
+              <div className="h-8 w-px bg-dark-700"></div>
 
               <div className="flex items-center gap-2">
                 <div className="flex items-center bg-dark-800 rounded-full">
@@ -275,10 +415,64 @@ const Video = () => {
                   </button>
                 </div>
 
-                <button className="flex items-center gap-2 bg-dark-800 hover:bg-dark-700 px-4 py-2 rounded-full">
-                  <FaShare />
-                  <span className="text-sm">Share</span>
-                </button>
+                <div className="relative" ref={shareButtonRef}>
+                  <button
+                    onClick={() => setShowShareMenu(!showShareMenu)}
+                    className="flex items-center gap-2 bg-dark-800 hover:bg-dark-700 px-4 py-2 rounded-full transition"
+                  >
+                    <FaShare />
+                    <span className="text-sm">Share</span>
+                  </button>
+
+                  {/* Share dropdown menu */}
+                  {showShareMenu && (
+                    <div className={`absolute right-0 ${getDropdownClasses(shareMenuPosition)} w-56 bg-dark-800 rounded-xl shadow-xl border border-dark-700 py-2 z-50`}>
+                      <button
+                        onClick={handleCopyLink}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
+                      >
+                        {linkCopied ? <FaCheck className="text-green-500" /> : <FaCopy />}
+                        <span className="text-sm">{linkCopied ? 'Link copied!' : 'Copy link'}</span>
+                      </button>
+                      <div className="h-px bg-dark-700 my-1"></div>
+                      <button
+                        onClick={() => handleShare('twitter')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
+                      >
+                        <FaTwitter className="text-[#1DA1F2]" />
+                        <span className="text-sm">Share on Twitter</span>
+                      </button>
+                      <button
+                        onClick={() => handleShare('facebook')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
+                      >
+                        <FaFacebook className="text-[#1877F2]" />
+                        <span className="text-sm">Share on Facebook</span>
+                      </button>
+                      <button
+                        onClick={() => handleShare('linkedin')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
+                      >
+                        <FaLinkedin className="text-[#0A66C2]" />
+                        <span className="text-sm">Share on LinkedIn</span>
+                      </button>
+                      <button
+                        onClick={() => handleShare('whatsapp')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
+                      >
+                        <FaWhatsapp className="text-[#25D366]" />
+                        <span className="text-sm">Share on WhatsApp</span>
+                      </button>
+                      <button
+                        onClick={() => handleShare('telegram')}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-dark-700 transition text-left"
+                      >
+                        <FaTelegram className="text-[#0088cc]" />
+                        <span className="text-sm">Share on Telegram</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -359,7 +553,7 @@ const Video = () => {
                       </div>
 
                       {showEmojiPicker && (
-                        <div className="absolute z-50 mt-2 right-0">
+                        <div className={`absolute z-50 ${getDropdownClasses(emojiPickerPosition)} right-0`}>
                           <EmojiPicker
                             onEmojiSelect={onEmojiSelect}
                             onClose={() => setShowEmojiPicker(false)}
@@ -398,6 +592,9 @@ const Video = () => {
                 </p>
               )}
 
+              {/* Separator */}
+              <div className="h-px bg-gray-800 mb-6"></div>
+
               <div className="space-y-1">
                 {commentsData?.data?.data?.map((comment) => (
                   <CommentItem
@@ -412,8 +609,8 @@ const Video = () => {
           </div>
 
           {/* Sidebar - Related videos */}
-          <div className="hidden lg:block space-y-4">
-            <h3 className="text-sm font-medium mb-4">Related videos</h3>
+          <div className="hidden lg:block lg:col-span-3">
+            <h3 className="text-lg font-semibold mb-4">Related videos</h3>
             {relatedVideos.length > 0 ? (
               <div className="space-y-4">
                 {relatedVideos.slice(0, 8).map((relatedVideo) => (
@@ -422,7 +619,7 @@ const Video = () => {
                     to={`/video/${relatedVideo._id}`}
                     className="flex gap-2 hover:bg-dark-800 p-2 rounded-lg transition"
                   >
-                    <div className="relative flex-shrink-0 w-40">
+                    <div className="relative flex-shrink-0 w-56">
                       <img
                         src={getThumbnailUrl(relatedVideo.thumbnail)}
                         alt={relatedVideo.title}
@@ -436,9 +633,9 @@ const Video = () => {
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium line-clamp-2 mb-1">{relatedVideo.title}</h4>
-                      <p className="text-xs text-gray-400 mb-1">{relatedVideo.uploader?.displayName}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <h4 className="text-base font-medium line-clamp-2 mb-1">{relatedVideo.title}</h4>
+                      <p className="text-sm text-gray-400 mb-1">{relatedVideo.uploader?.displayName}</p>
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
                         <span>{relatedVideo.views >= 1000 ? `${(relatedVideo.views / 1000).toFixed(1)}K` : relatedVideo.views} views</span>
                         <span>•</span>
                         <span>{formatDistanceToNow(new Date(relatedVideo.uploadedAt), { addSuffix: true })}</span>
@@ -448,7 +645,7 @@ const Video = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No related videos found</p>
+              <p className="text-base text-gray-500">No related videos found</p>
             )}
           </div>
         </div>

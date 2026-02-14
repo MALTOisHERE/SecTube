@@ -145,19 +145,16 @@ const Profile = () => {
   };
 
   return (
-    <div className="px-6 py-6 relative">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 via-transparent to-transparent pointer-events-none"></div>
-
-      <div className="max-w-4xl mx-auto space-y-6 relative">
-        <div className="bg-dark-800 border border-dark-700 rounded-xl p-8 shadow-xl">
-          <div className="flex items-center gap-3 mb-8 pb-6 border-b border-dark-700">
-            <div className="w-12 h-12 bg-primary-600/10 border border-primary-600/20 rounded-lg flex items-center justify-center">
-              <FaSave className="text-xl text-primary-600" />
+    <div className="px-6 py-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="bg-dark-800 rounded-xl p-8">
+          <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-800">
+            <div className="w-14 h-14 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center">
+              <FaSave className="text-2xl text-primary-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold">Profile Settings</h1>
-              <p className="text-sm text-gray-400">Manage your account information</p>
+              <h1 className="text-3xl font-bold">Profile Settings</h1>
+              <p className="text-sm text-gray-400 mt-1">Manage your account information</p>
             </div>
           </div>
 
@@ -190,7 +187,7 @@ const Profile = () => {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className="cursor-pointer bg-dark-700 hover:bg-dark-600 border border-dark-600 px-4 py-2 rounded-lg transition inline-block text-sm font-medium"
+                    className="cursor-pointer bg-dark-700 hover:bg-dark-600 px-5 py-2.5 rounded-lg transition inline-block text-sm font-semibold"
                   >
                     Choose Avatar
                   </label>
@@ -323,7 +320,7 @@ const Profile = () => {
             <button
               type="submit"
               disabled={updateMutation.isLoading}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 py-3 rounded-lg font-medium transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary-600/20"
+              className="w-full bg-primary-600 hover:bg-primary-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2 text-base"
             >
               <FaSave />
               <span>{updateMutation.isLoading ? 'Saving...' : 'Save Changes'}</span>
@@ -332,14 +329,14 @@ const Profile = () => {
         </div>
 
         {!user?.isStreamer ? (
-          <div className="bg-dark-800 border border-dark-700 rounded-xl p-8 shadow-xl">
-            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-dark-700">
-              <div className="w-12 h-12 bg-primary-600/10 border border-primary-600/20 rounded-lg flex items-center justify-center">
-                <FaVideo className="text-xl text-primary-600" />
+          <div className="bg-dark-800 rounded-xl p-8">
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center">
+                <FaVideo className="text-2xl text-primary-500" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold">Become a Streamer</h2>
-                <p className="text-sm text-gray-400">Share your knowledge with the community</p>
+                <h2 className="text-2xl font-bold">Become a Streamer</h2>
+                <p className="text-sm text-gray-400 mt-1">Share your knowledge with the community</p>
               </div>
             </div>
             <p className="text-gray-300 mb-6">
@@ -362,21 +359,21 @@ const Profile = () => {
               <button
                 type="submit"
                 disabled={upgradeMutation.isLoading}
-                className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 py-3 rounded-lg font-medium transition disabled:opacity-50 shadow-lg shadow-primary-600/20"
+                className="w-full bg-primary-600 hover:bg-primary-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 text-base"
               >
                 {upgradeMutation.isLoading ? 'Upgrading...' : 'Upgrade to Streamer'}
               </button>
             </form>
           </div>
         ) : (
-          <div className="bg-dark-800 border border-dark-700 rounded-xl p-8 shadow-xl">
-            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-dark-700">
-              <div className="w-12 h-12 bg-red-600/10 border border-red-600/20 rounded-lg flex items-center justify-center">
-                <FaVideo className="text-xl text-red-600" />
+          <div className="bg-dark-800 rounded-xl p-8">
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-800">
+              <div className="w-14 h-14 bg-gradient-to-br from-red-600/20 to-red-500/10 rounded-xl flex items-center justify-center">
+                <FaVideo className="text-2xl text-red-500" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold">Streamer Account</h2>
-                <p className="text-sm text-gray-400">Manage your content creator status</p>
+                <h2 className="text-2xl font-bold">Streamer Account</h2>
+                <p className="text-sm text-gray-400 mt-1">Manage your content creator status</p>
               </div>
             </div>
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
@@ -388,7 +385,7 @@ const Profile = () => {
             <button
               onClick={() => setShowDowngradeConfirm(true)}
               disabled={downgradeMutation.isLoading}
-              className="w-full bg-red-600 hover:bg-red-700 py-3 rounded-lg font-medium transition disabled:opacity-50"
+              className="w-full bg-red-600 hover:bg-red-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 text-base"
             >
               {downgradeMutation.isLoading ? 'Downgrading...' : 'Downgrade to Viewer'}
             </button>

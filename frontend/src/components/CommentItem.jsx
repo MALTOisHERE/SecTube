@@ -6,6 +6,7 @@ import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
 import EmojiPicker from './EmojiPicker';
 import { getAvatarUrl } from '../config/constants';
+import { useDropdownPosition, getDropdownClasses } from '../hooks/useDropdownPosition';
 
 const CommentItem = ({ comment, videoUploaderId, onReplySubmit, level = 0 }) => {
   const { user, isAuthenticated } = useAuthStore();
@@ -20,6 +21,9 @@ const CommentItem = ({ comment, videoUploaderId, onReplySubmit, level = 0 }) => 
   const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
   const [submittingReply, setSubmittingReply] = useState(false);
   const emojiButtonRef = useRef(null);
+
+  // Calculate emoji picker position
+  const emojiPickerPosition = useDropdownPosition(emojiButtonRef, showEmojiPicker, 300);
 
   const isAuthor = comment.user._id === videoUploaderId;
 
@@ -185,16 +189,16 @@ const CommentItem = ({ comment, videoUploaderId, onReplySubmit, level = 0 }) => 
                 >
                   <FaRegSmile className="text-lg" />
                 </button>
-              </div>
 
-              {showEmojiPicker && (
-                <div className="absolute z-50 mt-2 right-0">
-                  <EmojiPicker
-                    onEmojiSelect={onEmojiSelect}
-                    onClose={() => setShowEmojiPicker(false)}
-                  />
-                </div>
-              )}
+                {showEmojiPicker && (
+                  <div className={`absolute z-50 ${getDropdownClasses(emojiPickerPosition)} right-0`}>
+                    <EmojiPicker
+                      onEmojiSelect={onEmojiSelect}
+                      onClose={() => setShowEmojiPicker(false)}
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="flex gap-2 mt-3">
                 <button

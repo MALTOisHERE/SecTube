@@ -112,19 +112,16 @@ const Upload = () => {
   };
 
   return (
-    <div className="px-6 py-6 relative">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 via-transparent to-transparent pointer-events-none"></div>
-
-      <div className="max-w-4xl mx-auto relative">
-        <div className="bg-dark-800 border border-dark-700 rounded-xl p-8 shadow-xl">
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-dark-700">
-            <div className="w-12 h-12 bg-primary-600/10 border border-primary-600/20 rounded-lg flex items-center justify-center">
-              <FaUpload className="text-xl text-primary-600" />
+    <div className="px-6 py-8">
+      <div className="max-w-5xl mx-auto">
+        <div className="bg-dark-800 rounded-xl p-8">
+          <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-800">
+            <div className="w-14 h-14 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center">
+              <FaUpload className="text-2xl text-primary-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold">Upload Video</h1>
-              <p className="text-sm text-gray-400">Share your cybersecurity knowledge</p>
+              <h1 className="text-3xl font-bold">Upload Video</h1>
+              <p className="text-sm text-gray-400 mt-1">Share your cybersecurity knowledge with the community</p>
             </div>
           </div>
 
@@ -134,7 +131,7 @@ const Upload = () => {
               <label className="block text-sm font-medium mb-3 text-gray-300">
                 Video File <span className="text-red-400">*</span>
               </label>
-              <div className="group border-2 border-dashed border-dark-700 bg-dark-900/50 rounded-xl p-8 text-center hover:border-primary-600 hover:bg-dark-900 transition-all">
+              <div className="group border-2 border-dashed border-gray-700 bg-dark-900/50 rounded-xl p-8 text-center hover:border-primary-500 hover:bg-dark-900 transition-all cursor-pointer">
                 <input
                   type="file"
                   accept="video/*"
@@ -147,11 +144,11 @@ const Upload = () => {
                   htmlFor="video-upload"
                   className="cursor-pointer flex flex-col items-center gap-3"
                 >
-                  <div className="w-16 h-16 bg-primary-600/10 border border-primary-600/20 rounded-lg flex items-center justify-center group-hover:bg-primary-600/20 transition">
-                    <FaVideo size={28} className="text-primary-600" />
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center group-hover:from-primary-600/30 group-hover:to-primary-500/20 transition">
+                    <FaVideo size={32} className="text-primary-500" />
                   </div>
                   <div>
-                    <span className="text-base font-medium block mb-1">
+                    <span className="text-lg font-semibold block mb-1">
                       {videoFile ? videoFile.name : 'Click to select video file'}
                     </span>
                     <span className="text-sm text-gray-400">
@@ -164,7 +161,7 @@ const Upload = () => {
 
             <div>
               <label className="block text-sm font-medium mb-3 text-gray-300">Thumbnail (Optional)</label>
-              <div className="group border-2 border-dashed border-dark-700 bg-dark-900/50 rounded-xl p-6 text-center hover:border-primary-600 hover:bg-dark-900 transition-all">
+              <div className="group border-2 border-dashed border-gray-700 bg-dark-900/50 rounded-xl p-6 text-center hover:border-primary-500 hover:bg-dark-900 transition-all cursor-pointer">
                 <input
                   type="file"
                   accept="image/*"
@@ -175,16 +172,16 @@ const Upload = () => {
                 />
                 <label
                   htmlFor="thumbnail-upload"
-                  className="cursor-pointer flex flex-col items-center gap-2"
+                  className="cursor-pointer flex flex-col items-center gap-3"
                 >
-                  <div className="w-12 h-12 bg-primary-600/10 border border-primary-600/20 rounded-lg flex items-center justify-center group-hover:bg-primary-600/20 transition">
-                    <FaImage size={20} className="text-primary-600" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-600/20 to-primary-500/10 rounded-xl flex items-center justify-center group-hover:from-primary-600/30 group-hover:to-primary-500/20 transition">
+                    <FaImage size={24} className="text-primary-500" />
                   </div>
                   <div>
-                    <span className="text-sm block mb-1">
+                    <span className="text-base font-semibold block mb-1">
                       {thumbnailFile ? thumbnailFile.name : 'Click to select thumbnail'}
                     </span>
-                    <span className="text-xs text-gray-400">JPG, PNG, GIF (Recommended: 1280x720)</span>
+                    <span className="text-sm text-gray-400">JPG, PNG, GIF (Recommended: 1280x720)</span>
                   </div>
                 </label>
               </div>
@@ -308,19 +305,19 @@ const Upload = () => {
             </div>
 
             {uploadMutation.isLoading && (
-              <div className="bg-dark-900 border border-dark-700 rounded-xl p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">Uploading...</span>
-                  <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
+              <div className="bg-primary-600/10 border border-primary-600/30 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-base font-semibold">Uploading your video...</span>
+                  <span className="text-base font-bold text-primary-500">{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-dark-700 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-dark-700 rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-primary-600 to-primary-500 h-2.5 rounded-full transition-all duration-300"
+                    className="bg-primary-600 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-sm text-gray-400 mt-3 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary-600 rounded-full animate-pulse"></span>
+                <p className="text-sm text-gray-300 mt-4 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></span>
                   Please don't close this page. Your video will be processed after upload.
                 </p>
               </div>
@@ -329,7 +326,7 @@ const Upload = () => {
             <button
               type="submit"
               disabled={uploadMutation.isLoading || !videoFile}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 py-3 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-primary-600/20"
+              className="w-full bg-primary-600 hover:bg-primary-700 py-3.5 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base"
             >
               <FaUpload />
               <span>{uploadMutation.isLoading ? 'Uploading...' : 'Upload Video'}</span>

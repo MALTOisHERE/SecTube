@@ -1,12 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaHome, FaTh } from 'react-icons/fa';
+import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars } from 'react-icons/fa';
 import { useState } from 'react';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
+import useSidebarStore from '../store/sidebarStore';
 import ConfirmDialog from './ConfirmDialog';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { toggleSidebar } = useSidebarStore();
   const navigate = useNavigate();
   const { addToast } = useToastStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,10 +35,19 @@ const Navbar = () => {
   return (
     <nav className="bg-dark-900 border-b border-dark-800 sticky top-0 z-50">
       <div className="px-4 h-14 flex items-center justify-between gap-4">
-        {/* Left: Logo */}
-        <Link to="/" className="flex items-center flex-shrink-0">
-          <img src="/logo.png" alt="SecTube Logo" className="h-10 w-auto" />
-        </Link>
+        {/* Left: Hamburger Menu & Logo */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={toggleSidebar}
+            className="text-gray-400 hover:text-white transition p-2 hover:bg-dark-800 rounded-lg"
+            aria-label="Toggle sidebar"
+          >
+            <FaBars className="text-xl" />
+          </button>
+          <Link to="/" className="flex items-center flex-shrink-0">
+            <img src="/logo.png" alt="SecTube Logo" className="h-10 w-auto" />
+          </Link>
+        </div>
 
         {/* Center: Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
@@ -102,24 +113,6 @@ const Navbar = () => {
             </>
           )}
         </div>
-      </div>
-
-      {/* Secondary navigation */}
-      <div className="border-t border-dark-800 px-4 h-12 flex items-center gap-6 overflow-x-auto">
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-sm text-gray-300 hover:text-white whitespace-nowrap"
-        >
-          <FaHome className="text-sm" />
-          <span>Home</span>
-        </Link>
-        <Link
-          to="/browse"
-          className="flex items-center gap-2 text-sm text-gray-300 hover:text-white whitespace-nowrap"
-        >
-          <FaTh className="text-sm" />
-          <span>Browse</span>
-        </Link>
       </div>
 
       {/* Logout Confirmation Dialog */}
