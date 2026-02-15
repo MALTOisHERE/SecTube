@@ -11,6 +11,9 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Browse from './pages/Browse';
 import Search from './pages/Search';
+import History from './pages/History';
+import Saved from './pages/Saved';
+import Subscriptions from './pages/Subscriptions';
 import ProtectedRoute from './components/ProtectedRoute';
 import useSidebarStore from './store/sidebarStore';
 
@@ -44,6 +47,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saved"
+            element={
+              <ProtectedRoute>
+                <Saved />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscriptions"
+            element={
+              <ProtectedRoute>
+                <Subscriptions />
               </ProtectedRoute>
             }
           />

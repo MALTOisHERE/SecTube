@@ -1,11 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars } from 'react-icons/fa';
-import { useState } from 'react';
+import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo } from 'react-icons/fa';
+import { useState, useRef, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
 import useSidebarStore from '../store/sidebarStore';
 import ConfirmDialog from './ConfirmDialog';
 import Z_INDEX from '../config/zIndex';
+import { getAvatarUrl } from '../config/constants';
+import { useDropdownPosition, getDropdownClasses } from '../hooks/useDropdownPosition';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -14,6 +16,24 @@ const Navbar = () => {
   const { addToast } = useToastStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
+
+  const userMenuPosition = useDropdownPosition(userMenuRef, showUserMenu, 200);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showUserMenu]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -72,31 +92,78 @@ const Navbar = () => {
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
           {isAuthenticated ? (
-            <>
-              {user?.isStreamer && (
-                <Link
-                  to="/upload"
-                  className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-md text-sm font-medium text-white border border-primary-700 shadow-sm"
-                >
-                  <FaUpload size={14} />
-                  <span>Upload</span>
-                </Link>
-              )}
-              <Link
-                to="/profile"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-dark-800 text-sm transition border border-transparent"
-              >
-                <FaUser className="text-gray-500" size={14} />
-                <span className="text-gray-300">{user?.username}</span>
-              </Link>
+            <div className="relative" ref={userMenuRef}>
               <button
-                onClick={handleLogoutClick}
-                className="p-2 rounded-md hover:bg-dark-800 transition border border-transparent"
-                title="Logout"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-dark-800 transition border-2 border-transparent hover:border-dark-700"
               >
-                <FaSignOutAlt className="text-gray-500" size={14} />
+                <img
+                  src={getAvatarUrl(user?.avatar)}
+                  alt={user?.displayName || user?.username}
+                  className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.src = getAvatarUrl('default-avatar.svg');
+                  }}
+                />
               </button>
-            </>
+
+              {/* User Dropdown Menu */}
+              {showUserMenu && (
+                <div className={`absolute right-0 ${getDropdownClasses(userMenuPosition)} w-56 bg-dark-900 rounded-md shadow-xl border border-dark-700 py-1.5 z-50`}>
+                  {/* User Info */}
+                  <div className="px-4 py-3 border-b border-dark-800">
+                    <p className="text-sm font-medium text-white truncate">{user?.displayName || user?.username}</p>
+                    <p className="text-xs text-gray-500 truncate">@{user?.username}</p>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    {user?.isStreamer && (
+                      <Link
+                        to="/upload"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
+                      >
+                        <FaUpload size={14} />
+                        <span>Upload Video</span>
+                      </Link>
+                    )}
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
+                    >
+                      <FaCog size={14} />
+                      <span>Your Profile</span>
+                    </Link>
+                    {user?.isStreamer && (
+                      <Link
+                        to={`/channel/${user?.username}`}
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
+                      >
+                        <FaVideo size={14} />
+                        <span>Your Channel</span>
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* Logout */}
+                  <div className="border-t border-dark-800 py-1">
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        handleLogoutClick();
+                      }}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-red-500 hover:text-red-400 w-full"
+                    >
+                      <FaSignOutAlt size={14} />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link

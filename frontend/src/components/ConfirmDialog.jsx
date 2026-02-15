@@ -41,7 +41,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 mb-4">
-          <FaExclamationTriangle className={`text-lg ${styles.icon} mt-0.5`} />
+          <FaExclamationTriangle className={`${styles.icon} flex-shrink-0`} size={20} />
           <div>
             <h3 className="text-base font-semibold text-white mb-1">{title}</h3>
             <p className="text-sm text-gray-400">{message}</p>
