@@ -49,14 +49,61 @@ const Channel = () => {
   if (channelLoading) {
     return (
       <div className="px-6 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-dark-900 rounded-md border border-dark-800 p-6 animate-pulse">
-            <div className="flex items-center gap-6">
-              <div className="w-28 h-28 bg-dark-800 rounded-full"></div>
-              <div className="flex-1 space-y-4">
-                <div className="h-5 bg-dark-800 rounded w-1/4"></div>
-                <div className="h-4 bg-dark-800 rounded w-1/3"></div>
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Channel header skeleton */}
+          <div className="bg-dark-900 rounded-md border border-dark-800 p-6">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
+              <div className="w-28 h-28 bg-dark-800 rounded-full animate-pulse border border-dark-800"></div>
+              <div className="flex-1 text-center md:text-left">
+                {/* Name */}
+                <div className="h-8 bg-dark-800 rounded animate-pulse w-48 mb-1 mx-auto md:mx-0"></div>
+                {/* Username */}
+                <div className="h-5 bg-dark-800 rounded animate-pulse w-32 mb-3 mx-auto md:mx-0"></div>
+                {/* Bio */}
+                <div className="h-5 bg-dark-800 rounded animate-pulse w-full mb-1"></div>
+                <div className="h-5 bg-dark-800 rounded animate-pulse w-3/4 mb-4 mx-auto md:mx-0"></div>
+                {/* Stats */}
+                <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
+                  <div className="h-5 bg-dark-800 rounded animate-pulse w-24"></div>
+                  <div className="h-5 bg-dark-800 rounded animate-pulse w-20"></div>
+                  <div className="h-5 bg-dark-800 rounded animate-pulse w-28"></div>
+                </div>
+                {/* Specialties */}
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
+                  <div className="h-5 bg-dark-800 rounded animate-pulse w-20"></div>
+                  <div className="h-5 bg-dark-800 rounded animate-pulse w-24"></div>
+                  <div className="h-5 bg-dark-800 rounded animate-pulse w-20"></div>
+                </div>
+                {/* Social links */}
+                <div className="flex items-center gap-4 mb-4 justify-center md:justify-start">
+                  <div className="w-5 h-5 bg-dark-800 rounded-full animate-pulse"></div>
+                  <div className="w-5 h-5 bg-dark-800 rounded-full animate-pulse"></div>
+                  <div className="w-5 h-5 bg-dark-800 rounded-full animate-pulse"></div>
+                </div>
+                {/* Subscribe button */}
+                <div className="h-9 bg-dark-800 rounded-md animate-pulse w-32 mx-auto md:mx-0"></div>
               </div>
+            </div>
+          </div>
+
+          {/* Videos section skeleton */}
+          <div>
+            <div className="h-7 bg-dark-800 rounded animate-pulse w-24 mb-6"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+              {[...Array(8)].map((_, i) => (
+                <div key={i}>
+                  <div className="aspect-video bg-dark-800 rounded-md border border-dark-800 mb-2 animate-pulse"></div>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 bg-dark-800 rounded-full border border-dark-800 flex-shrink-0 animate-pulse"></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-full mb-0.5"></div>
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-3/4 mb-0.5"></div>
+                      <div className="h-3 bg-dark-800 rounded animate-pulse w-2/3 mb-0.5"></div>
+                      <div className="h-3 bg-dark-800 rounded animate-pulse w-1/2"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -222,13 +269,15 @@ const Channel = () => {
           {videosLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-video bg-dark-800 rounded-xl mb-3"></div>
-                  <div className="flex gap-3">
-                    <div className="w-9 h-9 bg-dark-800 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-dark-800 rounded w-3/4"></div>
-                      <div className="h-3 bg-dark-800 rounded w-1/2"></div>
+                <div key={i}>
+                  <div className="aspect-video bg-dark-800 rounded-md border border-dark-800 mb-2 animate-pulse"></div>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 bg-dark-800 rounded-full border border-dark-800 flex-shrink-0 animate-pulse"></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-full mb-0.5"></div>
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-3/4 mb-0.5"></div>
+                      <div className="h-3 bg-dark-800 rounded animate-pulse w-2/3 mb-0.5"></div>
+                      <div className="h-3 bg-dark-800 rounded animate-pulse w-1/2"></div>
                     </div>
                   </div>
                 </div>

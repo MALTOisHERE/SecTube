@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile, FaBell, FaRegBell, FaTwitter, FaLinkedin, FaFacebook, FaWhatsapp, FaTelegram, FaCopy, FaCheck } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile, FaBell, FaRegBell, FaTwitter, FaLinkedin, FaFacebook, FaWhatsapp, FaTelegram, FaCopy, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import { videoAPI, userAPI } from '../services/api';
 import VideoPlayer from '../components/VideoPlayer';
 import CommentItem from '../components/CommentItem';
@@ -264,8 +264,105 @@ const Video = () => {
   if (isLoading) {
     return (
       <div className="px-6 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="aspect-video bg-dark-900 rounded-md animate-pulse border border-dark-800"></div>
+        <div className="mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Main content skeleton */}
+            <div className="lg:col-span-9">
+              {/* Video player skeleton */}
+              <div className="aspect-video bg-dark-800 rounded-md animate-pulse mb-4"></div>
+
+              {/* Title skeleton */}
+              <div className="h-7 bg-dark-800 rounded animate-pulse mb-3 w-3/4"></div>
+
+              {/* Channel info and actions skeleton */}
+              <div className="flex items-center justify-between mb-4 gap-4">
+                <div className="flex items-center justify-between flex-1">
+                  {/* Channel info */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-dark-800 rounded-full animate-pulse"></div>
+                    <div>
+                      <div className="h-6 bg-dark-800 rounded animate-pulse w-32 mb-1"></div>
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-24"></div>
+                    </div>
+                  </div>
+                  {/* Subscribe button skeleton */}
+                  <div className="h-8 bg-dark-800 rounded-md animate-pulse w-28"></div>
+                </div>
+                {/* Separator */}
+                <div className="h-8 w-px bg-dark-700"></div>
+                {/* Action buttons skeleton */}
+                <div className="flex items-center gap-2">
+                  <div className="h-8 bg-dark-800 rounded-md animate-pulse w-24"></div>
+                  <div className="h-8 bg-dark-800 rounded-md animate-pulse w-20"></div>
+                </div>
+              </div>
+
+              {/* Description skeleton */}
+              <div className="bg-dark-900 border border-dark-800 rounded-md p-4 mb-4">
+                <div className="h-5 bg-dark-800 rounded mb-2 w-full animate-pulse"></div>
+                <div className="h-5 bg-dark-800 rounded mb-2 w-5/6 animate-pulse"></div>
+                <div className="h-5 bg-dark-800 rounded w-4/6 animate-pulse"></div>
+              </div>
+
+              {/* Comments section */}
+              <div>
+                {/* Comments title skeleton */}
+                <div className="h-7 bg-dark-800 rounded animate-pulse w-32 mb-4"></div>
+
+                {/* Comment form skeleton (when authenticated) */}
+                <div className="mb-8">
+                  <div className="flex gap-3">
+                    <div className="w-10 h-10 bg-dark-800 rounded-full animate-pulse flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <div className="h-20 bg-dark-800 rounded-md animate-pulse mb-3"></div>
+                      <div className="flex justify-end gap-2">
+                        <div className="h-8 bg-dark-800 rounded-md animate-pulse w-20"></div>
+                        <div className="h-8 bg-dark-800 rounded-md animate-pulse w-24"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Separator */}
+                <div className="h-px bg-gray-800 mb-6"></div>
+
+                {/* Comments list skeleton */}
+                <div className="space-y-1">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex gap-2.5 py-2">
+                      <div className="w-8 h-8 bg-dark-800 rounded-full animate-pulse flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-dark-800 rounded animate-pulse w-40 mb-1"></div>
+                        <div className="h-4 bg-dark-800 rounded animate-pulse w-full mb-1"></div>
+                        <div className="h-4 bg-dark-800 rounded animate-pulse w-3/4 mb-2"></div>
+                        <div className="h-3 bg-dark-800 rounded animate-pulse w-24"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Related videos sidebar skeleton */}
+            <div className="hidden lg:block lg:col-span-3">
+              <div className="h-7 bg-dark-800 rounded animate-pulse w-32 mb-4"></div>
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex gap-2 p-2">
+                    <div className="relative flex-shrink-0 w-56">
+                      <div className="w-full aspect-video bg-dark-800 rounded-lg animate-pulse"></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="h-5 bg-dark-800 rounded animate-pulse w-full mb-1"></div>
+                      <div className="h-5 bg-dark-800 rounded animate-pulse w-3/4 mb-1"></div>
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-2/3 mb-1"></div>
+                      <div className="h-4 bg-dark-800 rounded animate-pulse w-1/2"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -316,7 +413,9 @@ const Video = () => {
       <div className="px-6 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-dark-800 rounded-xl p-8 text-center">
-            <div className="text-red-500 text-5xl mb-4">⚠️</div>
+            <div className="flex justify-center mb-4">
+              <FaExclamationTriangle className="text-red-500" size={48} />
+            </div>
             <h2 className="text-2xl font-bold mb-3">Processing Failed</h2>
             <p className="text-gray-400 mb-4">
               There was an error processing your video. Please try uploading again or contact support if the issue persists.

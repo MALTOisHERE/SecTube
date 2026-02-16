@@ -86,8 +86,8 @@ const Upload = () => {
   const handleVideoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024 * 1024) {
-        addToast({ type: 'error', message: 'Video file must be less than 5GB' });
+      if (file.size > 100 * 1024 * 1024) {
+        addToast({ type: 'error', message: 'Video file must be less than 100MB' });
         return;
       }
       setVideoFile(file);
@@ -150,7 +150,7 @@ const Upload = () => {
               onChange={handleVideoChange}
               icon={FaVideo}
               fileName={videoFile?.name}
-              helpText="MP4, AVI, MOV, MKV, WebM (Max 5GB)"
+              helpText="MP4, AVI, MOV, MKV, WebM (Max 100MB)"
               disabled={uploadMutation.isLoading}
             />
 
