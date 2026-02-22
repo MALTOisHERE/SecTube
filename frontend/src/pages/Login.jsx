@@ -18,6 +18,11 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // 2FA State
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [twoFactorToken, setTwoFactorToken] = useState('');
+  const [tempUserId, setTempUserId] = useState('');
+
   // Check for errors in URL (from SSO redirection)
   useEffect(() => {
     const error = searchParams.get('error');
@@ -58,6 +63,14 @@ const Login = () => {
     try {
       const response = await authAPI.login(formData);
       
+      // Handle 2FA Requirement
+      if (response.data.twoFactorRequired) {
+        setTempUserId(response.data.userId);
+        setTwoFactorRequired(true);
+        setLoading(false);
+        return;
+      }
+
       // Handle Remember Me
       if (rememberMe) {
         localStorage.setItem('remembered_email', formData.email);
@@ -78,6 +91,36 @@ const Login = () => {
     }
   };
 
+  const handle2FASubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await authAPI.verifyLogin2FA({
+        userId: tempUserId,
+        token: twoFactorToken
+      });
+
+      // Handle Remember Me (now that we are fully logged in)
+      if (rememberMe) {
+        localStorage.setItem('remembered_email', formData.email);
+      } else {
+        localStorage.removeItem('remembered_email');
+      }
+
+      login(response.data.user, response.data.token);
+      addToast({ type: 'success', message: '2FA Verified! Welcome back.' });
+      navigate('/');
+    } catch (err) {
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || 'Invalid 2FA code'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-dark-950 overflow-hidden">
       {/* Left Side: Form (Reverted to previous design) */}
@@ -85,110 +128,149 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="p-4 sm:p-8">
             <div className="mb-8 text-center">
-              <h1 className="text-2xl font-bold text-white mb-2">Sign In</h1>
-              <p className="text-sm text-gray-400">Enter your credentials to access your account</p>
+              <h1 className="text-2xl font-bold text-white mb-2">
+                {twoFactorRequired ? 'Two-Factor Auth' : 'Sign In'}
+              </h1>
+              <p className="text-sm text-gray-400">
+                {twoFactorRequired 
+                  ? 'Enter the 6-digit code from your authenticator app.' 
+                  : 'Enter your credentials to access your account'}
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">Email Address</label>
-                <div className="relative">
-                  <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+            {twoFactorRequired ? (
+              <form onSubmit={handle2FASubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-300">Verification Code</label>
                   <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    type="text"
                     required
-                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
-                    placeholder="your@email.com"
+                    placeholder="000000"
+                    className="w-full bg-dark-900 border border-dark-700 rounded-md px-4 py-3 text-lg font-bold text-white text-center tracking-[0.5em] focus:outline-none focus:border-primary-500 transition-all"
+                    value={twoFactorToken}
+                    onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   />
                 </div>
-              </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-300">Password</label>
-                  <Link to="#" className="text-xs text-primary-500 hover:text-primary-400 transition font-medium">
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="relative group">
-                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-colors" size={14} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
-                    placeholder="••••••••"
-                  />
+                <div className="space-y-3">
+                  <button
+                    type="submit"
+                    disabled={loading || twoFactorToken.length !== 6}
+                    className="w-full bg-primary-600 hover:bg-primary-700 py-2.5 rounded-md font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed border border-primary-700 shadow-sm"
+                  >
+                    {loading ? 'Verifying...' : 'Verify & Sign In'}
+                  </button>
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                    onClick={() => setTwoFactorRequired(false)}
+                    className="w-full text-sm text-gray-500 hover:text-white transition-colors"
                   >
-                    {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                    Back to Login
                   </button>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="rememberMe"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={handleChange}
-                  className="w-4 h-4 rounded border-dark-700 bg-dark-900 text-primary-600 focus:ring-primary-500 focus:ring-offset-dark-950 transition-colors cursor-pointer"
-                />
-                <label htmlFor="rememberMe" className="text-sm text-gray-400 cursor-pointer select-none">
-                  Remember me
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary-600 hover:bg-primary-700 py-2.5 rounded-md font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed border border-primary-700 shadow-sm mt-2"
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                    <span>Logging in...</span>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-300">Email Address</label>
+                  <div className="relative">
+                    <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
+                      placeholder="your@email.com"
+                    />
                   </div>
-                ) : 'Sign in'}
-              </button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-dark-800"></div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-dark-950 px-2 text-gray-500 font-bold tracking-widest">Or continue with</span>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-300">Password</label>
+                    <Link to="/forgot-password" size={14} className="text-xs text-primary-500 hover:text-primary-400 transition font-medium">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative group">
+                    <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-colors" size={14} />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-dark-700 bg-dark-900 text-primary-600 focus:ring-primary-500 focus:ring-offset-dark-950 transition-colors cursor-pointer"
+                  />
+                  <label htmlFor="rememberMe" className="text-sm text-gray-400 cursor-pointer select-none">
+                    Remember me
+                  </label>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={handleGithubLogin}
-                  className="flex items-center justify-center gap-3 bg-dark-900 hover:bg-dark-800 border border-dark-700 py-2.5 rounded-md font-semibold text-sm transition-all shadow-sm"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary-600 hover:bg-primary-700 py-2.5 rounded-md font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed border border-primary-700 shadow-sm mt-2"
                 >
-                  <FaGithub size={18} />
-                  <span>GitHub</span>
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                      <span>Logging in...</span>
+                    </div>
+                  ) : 'Sign in'}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="flex items-center justify-center gap-3 bg-dark-900 hover:bg-dark-800 border border-dark-700 py-2.5 rounded-md font-semibold text-sm transition-all shadow-sm"
-                >
-                  <FaGoogle size={18} className="text-red-500" />
-                  <span>Google</span>
-                </button>
-              </div>
-            </form>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-dark-800"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-dark-950 px-2 text-gray-500 font-bold tracking-widest">Or continue with</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={handleGithubLogin}
+                    className="flex items-center justify-center gap-3 bg-dark-900 hover:bg-dark-800 border border-dark-700 py-2.5 rounded-md font-semibold text-sm transition-all shadow-sm"
+                  >
+                    <FaGithub size={18} />
+                    <span>GitHub</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    className="flex items-center justify-center gap-3 bg-dark-900 hover:bg-dark-800 border border-dark-700 py-2.5 rounded-md font-semibold text-sm transition-all shadow-sm"
+                  >
+                    <FaGoogle size={18} className="text-red-500" />
+                    <span>Google</span>
+                  </button>
+                </div>
+              </form>
+            )}
 
             <div className="mt-8 pt-6 border-t border-dark-800">
               <p className="text-center text-sm text-gray-400 font-medium">

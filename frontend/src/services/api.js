@@ -37,6 +37,12 @@ export const authAPI = {
   },
   upgradeToStreamer: (data) => api.post('/auth/upgrade-to-streamer', data),
   downgradeToViewer: () => api.post('/auth/downgrade-to-viewer'),
+  forgotPassword: (data) => api.post('/auth/forgotpassword', data),
+  resetPassword: (token, data) => api.put(`/auth/resetpassword/${token}`, data),
+  setup2FA: () => api.post('/auth/setup-2fa'),
+  verify2FA: (data) => api.post('/auth/verify-2fa', data),
+  disable2FA: (data) => api.post('/auth/disable-2fa', data),
+  verifyLogin2FA: (data) => api.post('/auth/verify-login-2fa', data),
 };
 
 // Video API

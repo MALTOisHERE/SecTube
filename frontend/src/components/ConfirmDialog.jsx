@@ -1,7 +1,21 @@
 import { FaExclamationTriangle } from 'react-icons/fa';
 import Z_INDEX from '../config/zIndex';
 
-const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', type = 'danger' }) => {
+const ConfirmDialog = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  title, 
+  message, 
+  confirmText = 'Confirm', 
+  cancelText = 'Cancel', 
+  type = 'danger',
+  showInput = false,
+  inputValue = '',
+  onInputChange = () => {},
+  inputPlaceholder = 'Enter value...',
+  inputType = 'text'
+}) => {
   if (!isOpen) return null;
 
   const typeStyles = {
@@ -48,6 +62,19 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
           </div>
         </div>
 
+        {showInput && (
+          <div className="mt-4 px-1">
+            <input
+              type={inputType}
+              autoFocus
+              className="w-full bg-dark-950 border border-dark-700 rounded-md px-4 py-2 text-sm text-white focus:outline-none focus:border-primary-500 transition-all"
+              placeholder={inputPlaceholder}
+              value={inputValue}
+              onChange={(e) => onInputChange(e.target.value)}
+            />
+          </div>
+        )}
+
         <div className="flex gap-2 justify-end mt-5">
           <button
             onClick={onClose}
@@ -57,7 +84,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
           </button>
           <button
             onClick={() => {
-              onConfirm();
+              onConfirm(inputValue);
               onClose();
             }}
             className={`px-4 py-2 ${styles.button} rounded-md font-medium transition text-sm border shadow-sm`}

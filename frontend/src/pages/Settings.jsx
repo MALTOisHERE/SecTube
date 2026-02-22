@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, videoAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug, FaFingerprint, FaLink, FaUserEdit, FaCheck, FaShieldAlt, FaDiscord, FaYoutube, FaUpload, FaImage, FaList, FaTags, FaTools, FaEye, FaFileUpload } from 'react-icons/fa';
+import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug, FaFingerprint, FaLink, FaUserEdit, FaCheck, FaShieldAlt, FaDiscord, FaYoutube, FaUpload, FaImage, FaList, FaTags, FaTools, FaEye, FaFileUpload, FaMobileAlt, FaKey, FaChevronRight, FaTimes } from 'react-icons/fa';
 import { SiTryhackme } from 'react-icons/si';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getAvatarUrl } from '../config/constants';
@@ -60,7 +60,7 @@ const Settings = () => {
       });
     }, { threshold: 0.3, rootMargin: "-100px 0px -50% 0px" });
 
-    const sections = ['identity', 'expertise', 'social', 'upload', 'streamer'];
+    const sections = ['identity', 'expertise', 'social', 'security', 'upload', 'streamer'];
     sections.forEach(id => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
@@ -110,8 +110,52 @@ const Settings = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
+  const [show2FADisableConfirm, setShow2FADisableConfirm] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // 2FA State
+  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [twoFactorToken, setTwoFactorToken] = useState('');
+  const [isQRZoomed, setIsQRZoomed] = useState(false);
 
   // Mutations
+  const setup2FAMutation = useMutation(() => authAPI.setup2FA(), {
+    onSuccess: (res) => {
+      setQrCode(res.data.data.qrCode);
+      setShow2FASetup(true);
+    },
+    onError: (err) => {
+      addToast({ type: 'error', message: err.response?.data?.message || 'Failed to initialize 2FA' });
+    }
+  });
+
+  const verify2FAMutation = useMutation((token) => authAPI.verify2FA({ token }), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('me');
+      updateUser({ ...user, isTwoFactorEnabled: true });
+      setShow2FASetup(false);
+      setTwoFactorToken('');
+      addToast({ type: 'success', message: '2FA enabled successfully!' });
+    },
+    onError: (err) => {
+      addToast({ type: 'error', message: err.response?.data?.message || 'Invalid code' });
+    }
+  });
+
+  const disable2FAMutation = useMutation((password) => authAPI.disable2FA({ password }), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('me');
+      updateUser({ ...user, isTwoFactorEnabled: false });
+      setShow2FADisableConfirm(false);
+      setConfirmPassword('');
+      addToast({ type: 'info', message: '2FA disabled successfully' });
+    },
+    onError: (err) => {
+      addToast({ type: 'error', message: err.response?.data?.message || 'Verification failed' });
+    }
+  });
+
   const updateMutation = useMutation((data) => authAPI.updateProfile(data), {
     onSuccess: (response) => {
       updateUser(response.data.data);
@@ -314,6 +358,15 @@ const Settings = () => {
               >
                 <FaLink size={14} /> Social Links
               </a>
+              <a 
+                href="#security" 
+                onClick={() => setActiveSection('security')}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-md transition text-sm font-medium ${
+                  activeSection === 'security' ? 'bg-dark-900 text-white' : 'text-gray-400 hover:text-white hover:bg-dark-900'
+                }`}
+              >
+                <FaShieldAlt size={14} /> Security
+              </a>
               
               {user?.isStreamer && (
                 <>
@@ -450,6 +503,118 @@ const Settings = () => {
               </Button>
             </div>
           </form>
+
+          {/* Security (2FA) */}
+          <div id="security" className="scroll-mt-24">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-1 h-8 bg-primary-500 rounded-full"></div>
+              <h3 className="text-lg font-bold text-white uppercase tracking-widest">Security</h3>
+            </div>
+
+            <div className="bg-dark-900 border border-dark-800 rounded-md overflow-hidden">
+              <div className="p-8 border-b border-dark-800">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="flex-1 space-y-2 text-center md:text-left">
+                    <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
+                      <h4 className="text-white font-bold">Two-Factor Authentication</h4>
+                      {user?.isTwoFactorEnabled ? (
+                        <span className="text-[10px] font-black bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full border border-green-500/20 tracking-widest">ENABLED</span>
+                      ) : (
+                        <span className="text-[10px] font-black bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full border border-red-500/20 tracking-widest">DISABLED</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 max-w-lg">Protect your account with an extra security layer. Once enabled, you'll need to provide a 6-digit code from your authenticator app to sign in.</p>
+                  </div>
+
+                  {!user?.isTwoFactorEnabled && !show2FASetup && (
+                    <Button 
+                      onClick={() => setup2FAMutation.mutate()} 
+                      loading={setup2FAMutation.isLoading}
+                      variant="primary"
+                    >
+                      Configure 2FA
+                    </Button>
+                  )}
+
+                  {user?.isTwoFactorEnabled && (
+                    <button 
+                      onClick={() => setShow2FADisableConfirm(true)}
+                      className="px-5 py-2.5 rounded-md bg-dark-800 border border-dark-700 text-sm font-bold text-red-500 hover:bg-red-500/10 transition-all shadow-sm"
+                    >
+                      Disable 2FA
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Step-by-Step Setup UI */}
+              {!user?.isTwoFactorEnabled && show2FASetup && (
+                <div className="p-8 bg-dark-950/30">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    {/* Step 1 */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-white font-bold text-sm">
+                        <span className="w-6 h-6 rounded-full bg-dark-800 border border-dark-700 flex items-center justify-center text-[10px]">1</span>
+                        Scan QR Code
+                      </div>
+                      <div 
+                        className="bg-white p-3 rounded-xl inline-block shadow-2xl cursor-zoom-in hover:scale-[1.02] transition-transform"
+                        onClick={() => setIsQRZoomed(true)}
+                      >
+                        <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
+                      </div>
+                      <p className="text-xs text-gray-500 leading-relaxed">Open your authenticator app and scan this code. Click image to enlarge.</p>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-white font-bold text-sm">
+                        <span className="w-6 h-6 rounded-full bg-dark-800 border border-dark-700 flex items-center justify-center text-[10px]">2</span>
+                        Enter Code
+                      </div>
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <FaKey className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={12} />
+                          <input
+                            type="text"
+                            placeholder="000 000"
+                            className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-4 py-2.5 text-sm text-white tracking-[0.3em] font-bold focus:outline-none focus:border-primary-500 transition-all"
+                            value={twoFactorToken}
+                            onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => verify2FAMutation.mutate(twoFactorToken)} 
+                          loading={verify2FAMutation.isLoading}
+                          disabled={twoFactorToken.length !== 6}
+                          fullWidth
+                        >
+                          Verify & Activate
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Step 3 (Info) */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-white font-bold text-sm">
+                        <span className="w-6 h-6 rounded-full bg-dark-800 border border-dark-700 flex items-center justify-center text-[10px]">3</span>
+                        Secure Account
+                      </div>
+                      <div className="p-4 bg-primary-600/5 border border-primary-500/10 rounded-xl">
+                        <p className="text-xs text-primary-400/80 leading-relaxed">Once verified, your account will be protected by military-grade TOTP encryption. Keep your device safe.</p>
+                      </div>
+                      <button 
+                        onClick={() => setShow2FASetup(false)}
+                        className="text-xs text-gray-500 hover:text-white transition-colors"
+                      >
+                        Cancel Setup
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Unified Upload Section */}
           {user?.isStreamer && (
@@ -670,6 +835,46 @@ const Settings = () => {
         message={`Are you sure? Your channel name "${user?.channelName}" will remain reserved for you, but you will lose streaming privileges.`}
         confirmText="Confirm"
       />
+
+      <ConfirmDialog
+        isOpen={show2FADisableConfirm}
+        onClose={() => {
+          setShow2FADisableConfirm(false);
+          setConfirmPassword('');
+        }}
+        onConfirm={(pass) => disable2FAMutation.mutate(pass)}
+        title="Disable Two-Factor Authentication"
+        message="To disable 2FA, please enter your password to verify your identity. This will make your account less secure."
+        confirmText="Confirm & Disable"
+        type="danger"
+        showInput={true}
+        inputValue={confirmPassword}
+        onInputChange={setConfirmPassword}
+        inputPlaceholder="Enter your password"
+        inputType="password"
+      />
+
+      {/* QR Code Zoom Modal */}
+      {isQRZoomed && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6"
+          onClick={() => setIsQRZoomed(false)}
+        >
+          <div className="relative bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full animate-fadeIn" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setIsQRZoomed(false)}
+              className="absolute -top-12 right-0 text-white hover:text-primary-400 transition-colors flex items-center gap-2 font-bold text-sm"
+            >
+              <FaTimes /> Close
+            </button>
+            <img src={qrCode} alt="2FA QR Code Large" className="w-full h-auto" />
+            <div className="mt-4 text-center">
+              <p className="text-black font-bold text-sm">Authenticator Protocol</p>
+              <p className="text-gray-500 text-xs mt-1">Scan with Google Authenticator or Authy</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

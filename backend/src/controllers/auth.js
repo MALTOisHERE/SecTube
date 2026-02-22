@@ -2,6 +2,10 @@ import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { uploadImageToCloudinary, deleteFromCloudinary } from '../utils/cloudinaryUpload.js';
 import { isCloudinaryConfigured } from '../config/cloudinary.js';
+import sendEmail from '../utils/sendEmail.js';
+import crypto from 'crypto';
+import speakeasy from 'speakeasy';
+import qrcode from 'qrcode';
 
 // Register user
 export const register = async (req, res, next) => {
@@ -44,9 +48,9 @@ export const login = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        errors: errors.array()
+        message: 'Invalid credentials'
       });
     }
 
@@ -69,6 +73,15 @@ export const login = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
+      });
+    }
+
+    // Check if 2FA is enabled
+    if (user.isTwoFactorEnabled) {
+      return res.status(200).json({
+        success: true,
+        twoFactorRequired: true,
+        userId: user._id
       });
     }
 
@@ -247,7 +260,262 @@ const sendTokenResponse = (user, statusCode, res) => {
       displayName: user.displayName,
       avatar: user.avatar,
       role: user.role,
-      isStreamer: user.isStreamer
+      isStreamer: user.isStreamer,
+      isTwoFactorEnabled: user.isTwoFactorEnabled
     }
   });
+};
+
+// Forgot password
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      // Return success even if user not found to prevent enumeration
+      return res.status(200).json({
+        success: true,
+        message: 'Email sent'
+      });
+    }
+
+    // Get reset token
+    const resetToken = user.getResetPasswordToken();
+
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Reset Your SecTube Password',
+        message,
+        html: `
+          <div style="font-family: sans-serif; padding: 40px 20px; text-align: center;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 24px;">Reset Password</h1>
+              
+              <p style="font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+                You requested to reset your password. Click the button below to choose a new one.
+              </p>
+              
+              <a href="${resetUrl}" style="display: inline-block; background-color: #0284c7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;">
+                Reset Password
+              </a>
+              
+              <div style="margin-top: 48px; border-top: 1px solid #e5e7eb; padding-top: 24px; text-align: center;">
+                <p style="color: #6b7280; font-size: 12px; line-height: 1.5;">
+                  This link will expire in 10 minutes. If you did not request this email, please ignore it.
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      });
+
+      res.status(200).json({ success: true, message: 'Email sent' });
+    } catch (err) {
+      console.error(err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Email could not be sent'
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reset password
+export const resetPassword = async (req, res, next) => {
+  try {
+    // Get hashed token
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.resettoken)
+      .digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired token'
+      });
+    }
+
+    // Set new password
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Setup 2FA - Generate Secret & QR Code
+export const setup2FA = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (user.isTwoFactorEnabled) {
+      return res.status(400).json({
+        success: false,
+        message: '2FA is already enabled'
+      });
+    }
+
+    const secret = speakeasy.generateSecret({
+      name: `SecTube:${user.username}`
+    });
+
+    // Store secret temporarily
+    user.twoFactorSecret = secret.base32;
+    await user.save();
+
+    // Generate QR Code
+    const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        qrCode: qrCodeDataURL,
+        secret: secret.base32
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Verify 2FA Setup
+export const verify2FA = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    const user = await User.findById(req.user.id).select('+twoFactorSecret');
+
+    if (!user.twoFactorSecret) {
+      return res.status(400).json({
+        success: false,
+        message: 'No 2FA secret found. Please setup 2FA first.'
+      });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token
+    });
+
+    if (!verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code'
+      });
+    }
+
+    user.isTwoFactorEnabled = true;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: '2FA enabled successfully',
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Disable 2FA
+export const disable2FA = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required to disable 2FA'
+      });
+    }
+
+    const user = await User.findById(req.user.id).select('+password');
+    
+    // Verify password
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
+      });
+    }
+
+    user.isTwoFactorEnabled = false;
+    user.twoFactorSecret = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: '2FA disabled successfully',
+      data: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        displayName: user.displayName,
+        avatar: user.avatar,
+        role: user.role,
+        isStreamer: user.isStreamer,
+        isTwoFactorEnabled: false
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Verify 2FA during Login
+export const verifyLogin2FA = async (req, res, next) => {
+  try {
+    const { userId, token } = req.body;
+    const user = await User.findById(userId).select('+twoFactorSecret');
+
+    if (!user || !user.twoFactorSecret) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid request'
+      });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token
+    });
+
+    if (!verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code'
+      });
+    }
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
 };

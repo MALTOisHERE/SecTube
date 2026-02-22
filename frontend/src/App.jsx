@@ -9,6 +9,8 @@ import Channel from './pages/Channel';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import AuthSuccess from './pages/AuthSuccess';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
@@ -26,24 +28,43 @@ function App() {
   const { isOpen } = useSidebarStore();
   const { isAuthenticated } = useAuthStore();
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  const [showDevBanner, setShowDevBanner] = useState(true);
+  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].some(path => location.pathname.startsWith(path));
+  
+  // Dev banner states: 'entering' | 'visible' | 'leaving' | 'hidden'
+  const [bannerStatus, setBannerStatus] = useState('entering');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowDevBanner(false);
-    }, 10000);
-    return () => clearTimeout(timer);
+    // Phase 1: Slide Up (entering -> visible)
+    const enterTimer = setTimeout(() => setBannerStatus('visible'), 500);
+    
+    // Phase 2: Start Sliding Down after 10s
+    const leaveTimer = setTimeout(() => setBannerStatus('leaving'), 10000);
+    
+    // Phase 3: Completely remove from DOM after slide down animation completes
+    const hideTimer = setTimeout(() => setBannerStatus('hidden'), 10500);
+
+    return () => {
+      clearTimeout(enterTimer);
+      clearTimeout(leaveTimer);
+      clearTimeout(hideTimer);
+    };
   }, []);
+
+  const handleCloseBanner = () => {
+    setBannerStatus('leaving');
+    setTimeout(() => setBannerStatus('hidden'), 500);
+  };
 
   return (
     <div className="min-h-screen bg-dark-950 text-white">
-      {showDevBanner && (
-        <div className="bg-red-600/90 text-white py-3 px-4 text-center text-xs font-bold uppercase tracking-[0.2em] fixed bottom-0 left-0 right-0 z-[2000] animate-fadeIn backdrop-blur-sm flex items-center justify-center gap-3">
+      {bannerStatus !== 'hidden' && (
+        <div className={`bg-red-600/90 text-white py-3 px-4 text-center text-xs font-bold uppercase tracking-[0.2em] fixed bottom-0 left-0 right-0 z-[2000] backdrop-blur-sm flex items-center justify-center gap-3 transition-all duration-500 ${
+          bannerStatus === 'entering' || bannerStatus === 'leaving' ? 'animate-slideDown' : 'animate-slideUp'
+        }`}>
           <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
           Platform Status: Development Mode // Unauthorized usage restricted
           <button 
-            onClick={() => setShowDevBanner(false)}
+            onClick={handleCloseBanner}
             className="absolute right-4 hover:text-gray-300 transition-colors"
             aria-label="Close banner"
           >
@@ -65,8 +86,14 @@ function App() {
             path="/login" 
             element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} 
           />
-                    <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} />
-                    <Route path="/auth-success" element={<AuthSuccess />} />
+                              <Route 
+                                path="/register" 
+                                element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} 
+                              />
+                              <Route path="/forgot-password" element={<ForgotPassword />} />
+                              <Route path="/reset-password/:resettoken" element={<ResetPassword />} />
+                              <Route path="/auth-success" element={<AuthSuccess />} />
+                    
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route
