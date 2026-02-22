@@ -119,6 +119,14 @@ videoSchema.index({ category: 1, views: -1 });
 videoSchema.index({ tags: 1 });
 videoSchema.index({ title: 'text', description: 'text' });
 
+// Pre-save hook to force failed videos to private
+videoSchema.pre('save', function(next) {
+  if (this.processingStatus === 'failed') {
+    this.visibility = 'private';
+  }
+  next();
+});
+
 // Virtual for like count
 videoSchema.virtual('likeCount').get(function() {
   return this.likes ? this.likes.length : 0;

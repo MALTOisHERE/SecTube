@@ -12,13 +12,13 @@ import {
   toggleSaveVideo,
   checkSavedStatus
 } from '../controllers/users.js';
-import { protect } from '../middleware/auth.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Public routes
-router.get('/:username', getUser);
-router.get('/:username/videos', getUserVideos);
+router.get('/:username', optionalAuth, getUser);
+router.get('/:username/videos', optionalAuth, getUserVideos);
 
 // Protected routes
 router.post('/:userId/subscribe', protect, subscribe);

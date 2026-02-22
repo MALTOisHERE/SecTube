@@ -50,7 +50,7 @@ router.get('/:videoId/comments', optionalAuth, getComments);
 
 // Protected routes
 router.post('/upload', protect, authorize('streamer', 'admin'), uploadMiddleware, uploadVideo);
-router.put('/:videoId', protect, videoMetadataValidation, updateVideo);
+router.put('/:videoId', protect, updateVideo);
 router.delete('/:videoId', protect, deleteVideo);
 router.post('/:videoId/like', protect, likeVideo);
 router.post('/:videoId/dislike', protect, dislikeVideo);

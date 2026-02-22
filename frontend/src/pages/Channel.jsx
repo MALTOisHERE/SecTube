@@ -307,7 +307,11 @@ const Channel = () => {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
                 {videosData?.data?.data?.map((video) => (
-                  <VideoCard key={video._id} video={video} />
+                  <VideoCard 
+                    key={video._id} 
+                    video={video} 
+                    showActions={isOwnChannel}
+                  />
                 ))}
               </div>
 

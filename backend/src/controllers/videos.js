@@ -224,14 +224,6 @@ export const getVideo = async (req, res, next) => {
 // Update video
 export const updateVideo = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-
     let video = await Video.findById(req.params.videoId);
 
     if (!video) {
@@ -249,24 +241,23 @@ export const updateVideo = async (req, res, next) => {
       });
     }
 
-    const updateFields = {
-      title: req.body.title,
-      description: req.body.description,
-      category: req.body.category,
-      tags: req.body.tags,
-      difficulty: req.body.difficulty,
-      toolsUsed: req.body.toolsUsed,
-      visibility: req.body.visibility
-    };
-
-    // Remove undefined fields
-    Object.keys(updateFields).forEach(key =>
-      updateFields[key] === undefined && delete updateFields[key]
-    );
+    const updateFields = {};
+    const allowedFields = ['title', 'description', 'category', 'tags', 'difficulty', 'toolsUsed', 'visibility'];
+    
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        // Force visibility to private if video has failed, regardless of user input
+        if (field === 'visibility' && video.processingStatus === 'failed') {
+          updateFields[field] = 'private';
+        } else {
+          updateFields[field] = req.body[field];
+        }
+      }
+    });
 
     video = await Video.findByIdAndUpdate(
       req.params.videoId,
-      updateFields,
+      { $set: updateFields },
       {
         new: true,
         runValidators: true

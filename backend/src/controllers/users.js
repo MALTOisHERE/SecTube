@@ -61,8 +61,11 @@ export const getUserVideos = async (req, res, next) => {
     // Build query - only show public videos unless it's the owner
     const query = { uploader: user._id };
 
-    if (!req.user || req.user.id !== user.id) {
+    const isOwner = req.user && req.user.id.toString() === user._id.toString();
+
+    if (!isOwner) {
       query.visibility = 'public';
+      query.processingStatus = 'ready';
     }
 
     const videos = await Video.find(query)
