@@ -32,14 +32,21 @@ function App() {
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email'].some(path => location.pathname.startsWith(path));
   
   // Dev banner states: 'entering' | 'visible' | 'leaving' | 'hidden'
-  const [bannerStatus, setBannerStatus] = useState('entering');
+  const [bannerStatus, setBannerStatus] = useState(() => {
+    return localStorage.getItem('hasSeenDevBanner') ? 'hidden' : 'entering';
+  });
 
   useEffect(() => {
+    if (bannerStatus === 'hidden') return;
+
     // Phase 1: Slide Up (entering -> visible)
     const enterTimer = setTimeout(() => setBannerStatus('visible'), 500);
     
     // Phase 2: Start Sliding Down after 10s
-    const leaveTimer = setTimeout(() => setBannerStatus('leaving'), 10000);
+    const leaveTimer = setTimeout(() => {
+      setBannerStatus('leaving');
+      localStorage.setItem('hasSeenDevBanner', 'true');
+    }, 10000);
     
     // Phase 3: Completely remove from DOM after slide down animation completes
     const hideTimer = setTimeout(() => setBannerStatus('hidden'), 10500);
@@ -49,10 +56,11 @@ function App() {
       clearTimeout(leaveTimer);
       clearTimeout(hideTimer);
     };
-  }, []);
+  }, [bannerStatus]);
 
   const handleCloseBanner = () => {
     setBannerStatus('leaving');
+    localStorage.setItem('hasSeenDevBanner', 'true');
     setTimeout(() => setBannerStatus('hidden'), 500);
   };
 
