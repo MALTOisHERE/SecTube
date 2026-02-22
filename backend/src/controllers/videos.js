@@ -176,6 +176,32 @@ export const getVideo = async (req, res, next) => {
       await video.save();
     }
 
+    // Update user watch history
+    if (req.user) {
+      try {
+        const user = await User.findById(req.user.id);
+        if (user) {
+          // Remove if already in history to move it to the top
+          user.watchHistory = user.watchHistory.filter(
+            item => item.video && item.video.toString() !== video._id.toString()
+          );
+          
+          // Add to beginning of history
+          user.watchHistory.unshift({ video: video._id, watchedAt: new Date() });
+          
+          // Limit history size (e.g., last 50 videos)
+          if (user.watchHistory.length > 50) {
+            user.watchHistory = user.watchHistory.slice(0, 50);
+          }
+          
+          await user.save();
+        }
+      } catch (err) {
+        console.error('Error updating watch history:', err);
+        // Don't fail the request just because history update failed
+      }
+    }
+
     // Add user interaction data
     const videoObj = video.toObject();
     if (req.user) {

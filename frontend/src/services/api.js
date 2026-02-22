@@ -66,6 +66,12 @@ export const userAPI = {
   subscribe: (userId) => api.post(`/users/${userId}/subscribe`),
   unsubscribe: (userId) => api.delete(`/users/${userId}/unsubscribe`),
   getSubscriptions: () => api.get('/users/me/subscriptions'),
+  getSubscriptionFeed: (params) => api.get('/users/me/subscription-feed', { params }),
+  getWatchHistory: (params) => api.get('/users/me/history', { params }),
+  clearWatchHistory: () => api.delete('/users/me/history'),
+  getSavedVideos: (params) => api.get('/users/me/saved', { params }),
+  toggleSaveVideo: (videoId) => api.post(`/users/me/saved/${videoId}`),
+  checkSavedStatus: (videoId) => api.get(`/users/me/saved/${videoId}/check`),
 };
 
 // Channel API

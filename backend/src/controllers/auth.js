@@ -14,7 +14,7 @@ export const register = async (req, res, next) => {
       });
     }
 
-    const { username, email, password, displayName } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
@@ -30,7 +30,7 @@ export const register = async (req, res, next) => {
       username,
       email,
       password,
-      displayName: displayName || username
+      displayName: username
     });
 
     sendTokenResponse(user, 201, res);
@@ -224,6 +224,15 @@ export const downgradeToViewer = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// GitHub callback handler
+export const githubCallback = (req, res) => {
+  const token = req.user.getSignedJwtToken();
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  
+  // Redirect to a specialized success route on the frontend
+  res.redirect(`${frontendUrl}/auth-success?token=${token}`);
 };
 
 // Helper to send token response

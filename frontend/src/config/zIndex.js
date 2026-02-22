@@ -17,12 +17,12 @@ export const Z_INDEX = {
   BASE: 0,
 
   // Navigation elements
-  SIDEBAR_OVERLAY: 1,
-  SIDEBAR: 2,
-  NAVBAR: 3,
+  SIDEBAR_OVERLAY: 1000,
+  SIDEBAR: 1001,
+  NAVBAR: 1100,
 
   // Dropdowns and popovers
-  DROPDOWN: 50,
+  DROPDOWN: 1200,
 
   // Modals and dialogs (very high to appear above everything)
   MODAL_OVERLAY: 999999,

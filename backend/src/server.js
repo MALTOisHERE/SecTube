@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
+import passport from './config/passport.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -27,6 +28,9 @@ const app = express();
 
 // Connect to database
 connectDB();
+
+// Passport middleware
+app.use(passport.initialize());
 
 // CORS - must be first
 app.use(cors({

@@ -46,7 +46,7 @@ const VideoCard = ({ video }) => {
         <Link to={`/channel/${video.uploader?.username}`} className="flex-shrink-0">
           <img
             src={getAvatarUrl(video.uploader?.avatar)}
-            alt={video.uploader?.displayName}
+            alt={video.uploader?.displayName || video.uploader?.username}
             className="w-8 h-8 rounded-full border border-dark-800"
             onError={(e) => {
               e.target.src = getAvatarUrl('default-avatar.svg');
@@ -66,7 +66,7 @@ const VideoCard = ({ video }) => {
             to={`/channel/${video.uploader?.username}`}
             className="block text-xs text-gray-500 hover:text-gray-400 mb-0.5"
           >
-            {video.uploader?.displayName}
+            {video.uploader?.displayName || video.uploader?.username}
           </Link>
 
           <div className="flex items-center gap-1 text-xs text-gray-500">

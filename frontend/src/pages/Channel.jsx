@@ -146,7 +146,7 @@ const Channel = () => {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
             <img
               src={getAvatarUrl(channel.avatar)}
-              alt={channel.displayName}
+              alt={channel.displayName || channel.username}
               className="w-28 h-28 rounded-full border border-dark-800"
               onError={(e) => {
                 e.target.src = getAvatarUrl('default-avatar.svg');
@@ -154,7 +154,7 @@ const Channel = () => {
             />
 
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-2xl font-semibold mb-1">{channel.displayName}</h1>
+              <h1 className="text-2xl font-semibold mb-1">{channel.displayName || channel.username}</h1>
               <p className="text-sm text-gray-500 mb-3">@{channel.username}</p>
 
               {channel.bio && <p className="text-sm text-gray-300 mb-4">{channel.bio}</p>}

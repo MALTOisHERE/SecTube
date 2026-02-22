@@ -29,21 +29,35 @@ const Home = () => {
   return (
     <div className="px-6 py-6">
       {/* Category chips */}
-      <div className="flex gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-3 mb-10 overflow-x-auto pb-4 scrollbar-hide">
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition ${
+            className={`relative px-4 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all duration-300 border overflow-hidden group ${
               category === selectedCategory
-                ? 'bg-white text-black'
-                : 'bg-dark-800 text-white hover:bg-dark-700'
+                ? 'bg-primary-600 text-white border-primary-400 shadow-[0_0_15px_rgba(14,165,233,0.25)]'
+                : 'bg-dark-900 text-gray-400 border-dark-700 hover:border-primary-500/50 hover:text-gray-200'
             }`}
           >
-            {category}
+            {/* Background scanning effect for active button */}
+            {category === selectedCategory && (
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+            )}
+            
+            <span className="relative z-10 flex items-center gap-2">
+              {category === selectedCategory && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>}
+              {category}
+            </span>
           </button>
         ))}
       </div>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
 
       {/* Videos Grid */}
       {isLoading ? (

@@ -19,6 +19,16 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
   },
+  githubId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
@@ -86,6 +96,20 @@ const userSchema = new mongoose.Schema({
   subscribedTo: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  }],
+  watchHistory: [{
+    video: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Video'
+    },
+    watchedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  savedVideos: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Video'
   }],
   verified: {
     type: Boolean,

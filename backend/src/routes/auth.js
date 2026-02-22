@@ -6,10 +6,12 @@ import {
   getMe,
   updateProfile,
   upgradeToStreamer,
-  downgradeToViewer
+  downgradeToViewer,
+  githubCallback
 } from '../controllers/auth.js';
 import { protect } from '../middleware/auth.js';
 import { avatarUploadMiddleware } from '../middleware/avatarUpload.js';
+import passport, { isGithubEnabled, isGoogleEnabled } from '../config/passport.js';
 
 const router = express.Router();
 
@@ -28,6 +30,24 @@ const loginValidation = [
 // Public routes
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
+
+// GitHub SSO routes
+router.get('/github', (req, res, next) => {
+  if (!isGithubEnabled) {
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=GitHub SSO is not configured on the server.`);
+  }
+  passport.authenticate('github', { scope: ['user:email'], session: false })(req, res, next);
+});
+router.get('/github/callback', passport.authenticate('github', { session: false, failureRedirect: '/login' }), githubCallback);
+
+// Google SSO routes
+router.get('/google', (req, res, next) => {
+  if (!isGoogleEnabled) {
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=Google SSO is not configured on the server.`);
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next);
+});
+router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), githubCallback);
 
 // Protected routes
 router.get('/me', protect, getMe);

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile, FaBell, FaRegBell, FaTwitter, FaLinkedin, FaFacebook, FaWhatsapp, FaTelegram, FaCopy, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaShare, FaRegSmile, FaBell, FaRegBell, FaTwitter, FaLinkedin, FaFacebook, FaWhatsapp, FaTelegram, FaCopy, FaCheck, FaExclamationTriangle, FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { videoAPI, userAPI } from '../services/api';
 import VideoPlayer from '../components/VideoPlayer';
 import CommentItem from '../components/CommentItem';
@@ -41,6 +41,7 @@ const Video = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   // Update local state when video data changes
   useEffect(() => {
@@ -59,6 +60,21 @@ const Video = () => {
       }
     }
   }, [video, user]);
+
+  // Check saved status
+  useEffect(() => {
+    const checkSaved = async () => {
+      if (isAuthenticated && videoId) {
+        try {
+          const res = await userAPI.checkSavedStatus(videoId);
+          setIsSaved(res.data.isSaved);
+        } catch (error) {
+          console.error('Error checking saved status:', error);
+        }
+      }
+    };
+    checkSaved();
+  }, [isAuthenticated, videoId]);
 
   const { data: commentsData } = useQuery(
     ['comments', videoId],
@@ -131,6 +147,23 @@ const Video = () => {
         };
       });
     },
+  });
+
+  const saveMutation = useMutation(() => userAPI.toggleSaveVideo(videoId), {
+    onSuccess: (response) => {
+      const { isSaved, message } = response.data;
+      setIsSaved(isSaved);
+      addToast({
+        type: isSaved ? 'success' : 'info',
+        message: message
+      });
+    },
+    onError: () => {
+      addToast({
+        type: 'error',
+        message: 'Failed to update saved status'
+      });
+    }
   });
 
   const commentMutation = useMutation(
@@ -452,14 +485,14 @@ const Video = () => {
                 <Link to={`/channel/${video.uploader?.username}`} className="flex items-center gap-3">
                   <img
                     src={getAvatarUrl(video.uploader?.avatar)}
-                    alt={video.uploader?.displayName}
+                    alt={video.uploader?.displayName || video.uploader?.username}
                     className="w-10 h-10 rounded-full"
                     onError={(e) => {
                       e.target.src = getAvatarUrl('default-avatar.svg');
                     }}
                   />
                   <div>
-                    <div className="font-medium">{video.uploader?.displayName}</div>
+                    <div className="font-medium">{video.uploader?.displayName || video.uploader?.username}</div>
                     <div className="text-xs text-gray-400">
                       {video.uploader?.subscribers?.length || 0} subscribers
                     </div>
@@ -515,6 +548,19 @@ const Video = () => {
                     <FaThumbsDown size={14} />
                   </button>
                 </div>
+
+                <button
+                  onClick={() => saveMutation.mutate()}
+                  disabled={!isAuthenticated}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition border font-medium text-sm ${
+                    isSaved
+                      ? 'bg-dark-800 text-primary-500 border-primary-900/50'
+                      : 'bg-dark-900 hover:bg-dark-800 text-gray-400 border-dark-700'
+                  }`}
+                >
+                  {isSaved ? <FaBookmark size={14} /> : <FaRegBookmark size={14} />}
+                  <span>{isSaved ? 'Saved' : 'Save'}</span>
+                </button>
 
                 <div className="relative" ref={shareButtonRef}>
                   <button
