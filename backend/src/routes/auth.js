@@ -17,7 +17,7 @@ const router = express.Router();
 
 // Validation rules
 const registerValidation = [
-  body('username').trim().isLength({ min: 3, max: 30 }).matches(/^[a-zA-Z0-9_-]+$/),
+  body('username').trim().isLength({ min: 3, max: 30 }).matches(/^[a-zA-Z0-9._-]+$/),
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 })
 ];

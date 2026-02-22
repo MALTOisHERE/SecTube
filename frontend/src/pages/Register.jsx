@@ -174,11 +174,12 @@ const Register = () => {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    pattern="[a-zA-Z0-9_-]+"
+                    pattern="[a-zA-Z0-9._-]+"
                     className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                     placeholder="username"
                   />
                 </div>
+                <p className="text-[10px] text-gray-500 mt-1">Only letters, numbers, dots, underscores, and hyphens</p>
               </div>
 
               <div>
