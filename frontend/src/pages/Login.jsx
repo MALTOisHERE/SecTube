@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaEnvelope, FaLock, FaShieldAlt, FaTerminal, FaBug, FaDatabase, FaCode, FaNetworkWired, FaGithub, FaGoogle } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaShieldAlt, FaTerminal, FaBug, FaDatabase, FaCode, FaNetworkWired, FaGithub, FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,9 +11,11 @@ const Login = () => {
   const login = useAuthStore((state) => state.login);
   const { addToast } = useToastStore();
   const [formData, setFormData] = useState({
-    email: '',
+    email: localStorage.getItem('remembered_email') || '',
     password: '',
   });
+  const [rememberMe, setRememberMe] = useState(!!localStorage.getItem('remembered_email'));
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Check for errors in URL (from SSO redirection)
@@ -38,10 +40,15 @@ const Login = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox' && name === 'rememberMe') {
+      setRememberMe(checked);
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -50,6 +57,14 @@ const Login = () => {
 
     try {
       const response = await authAPI.login(formData);
+      
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('remembered_email', formData.email);
+      } else {
+        localStorage.removeItem('remembered_email');
+      }
+
       login(response.data.user, response.data.token);
       addToast({ type: 'success', message: 'Welcome back! Login successful.' });
       navigate('/');
@@ -92,19 +107,45 @@ const Login = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-300">Password</label>
-                <div className="relative">
-                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-300">Password</label>
+                  <Link to="#" className="text-xs text-primary-500 hover:text-primary-400 transition font-medium">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative group">
+                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-colors" size={14} />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
+                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                  </button>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="rememberMe"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={handleChange}
+                  className="w-4 h-4 rounded border-dark-700 bg-dark-900 text-primary-600 focus:ring-primary-500 focus:ring-offset-dark-950 transition-colors cursor-pointer"
+                />
+                <label htmlFor="rememberMe" className="text-sm text-gray-400 cursor-pointer select-none">
+                  Remember me
+                </label>
               </div>
 
               <button
@@ -187,8 +228,11 @@ const Login = () => {
         </div>
 
         {/* Logo at top right */}
-        <Link to="/" className="absolute top-8 right-8 z-20 hover:scale-105 transition-transform">
+        <Link to="/" className="absolute top-8 right-8 z-20 hover:scale-105 transition-transform flex items-center gap-2">
           <img src="/logo.png" alt="SecTube Logo" className="h-10 w-auto filter drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />
+          <span className="bg-primary-600/10 text-primary-500 border border-primary-500/20 px-1.5 py-0.5 rounded text-[10px] font-black tracking-widest uppercase">
+            Beta
+          </span>
         </Link>
 
         {/* Background Glowing Orbs */}

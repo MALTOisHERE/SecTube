@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaUser, FaEnvelope, FaLock, FaUserShield, FaTerminal, FaBug, FaDatabase, FaCode, FaNetworkWired, FaGithub, FaGoogle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaUserShield, FaTerminal, FaBug, FaDatabase, FaCode, FaNetworkWired, FaGithub, FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ const Register = () => {
     confirmPassword: '',
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Check for errors in URL (from SSO redirection)
@@ -113,8 +114,11 @@ const Register = () => {
           <div className="w-full h-[2px] bg-primary-500/30 shadow-[0_0_15px_rgba(59,130,246,0.5)] absolute top-0 animate-[scan_4s_linear_infinite]"></div>
         </div>
 
-        <Link to="/" className="absolute top-8 left-8 z-20 hover:scale-105 transition-transform">
+        <Link to="/" className="absolute top-8 left-8 z-20 hover:scale-105 transition-transform flex items-center gap-2">
           <img src="/logo.png" alt="SecTube Logo" className="h-10 w-auto filter drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />
+          <span className="bg-primary-600/10 text-primary-500 border border-primary-500/20 px-1.5 py-0.5 rounded text-[10px] font-black tracking-widest uppercase">
+            Beta
+          </span>
         </Link>
 
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-600/10 rounded-full blur-[100px] animate-pulse"></div>
@@ -219,15 +223,22 @@ const Register = () => {
                 <div className="relative group">
                   <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-colors" size={14} />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     required
                     minLength="6"
-                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
+                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                  </button>
                 </div>
               </div>
 
@@ -236,15 +247,22 @@ const Register = () => {
                 <div className="relative group">
                   <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-colors" size={14} />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
                     minLength="6"
-                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
+                    className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
                     placeholder="••••••••"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                  </button>
                 </div>
               </div>
 

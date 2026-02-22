@@ -65,8 +65,11 @@ const Navbar = () => {
           >
             <FaBars size={18} />
           </button>
-          <Link to="/" className="flex items-center flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0 group">
             <img src="/logo.png" alt="SecTube Logo" className="h-10 w-auto" />
+            <span className="bg-primary-600/10 text-primary-500 border border-primary-500/20 px-1.5 py-0.5 rounded text-[10px] font-black tracking-widest uppercase">
+              Beta
+            </span>
           </Link>
         </div>
 
