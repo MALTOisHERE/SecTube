@@ -169,27 +169,24 @@ export const updateProfile = async (req, res, next) => {
 export const upgradeToStreamer = async (req, res, next) => {
   try {
     const { channelName, specialties } = req.body;
+    const user = await User.findById(req.user.id);
 
-    if (!channelName) {
+    // If user already has a channel name (returning streamer), use the existing one
+    const finalChannelName = user.channelName || channelName;
+
+    if (!finalChannelName) {
       return res.status(400).json({
         success: false,
         message: 'Please provide a channel name'
       });
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      {
-        isStreamer: true,
-        role: 'streamer',
-        channelName,
-        specialties: specialties || []
-      },
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+    user.isStreamer = true;
+    user.role = 'streamer';
+    user.channelName = finalChannelName;
+    user.specialties = specialties || user.specialties || [];
+    
+    await user.save();
 
     res.status(200).json({
       success: true,
@@ -209,6 +206,7 @@ export const downgradeToViewer = async (req, res, next) => {
       {
         isStreamer: false,
         role: 'viewer'
+        // Note: channelName is preserved so no one else can take it
       },
       {
         new: true,

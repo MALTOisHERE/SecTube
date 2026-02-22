@@ -3,11 +3,11 @@ import { useMutation, useQueryClient } from 'react-query';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug } from 'react-icons/fa';
+import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug, FaFingerprint, FaLink, FaUserEdit, FaCheck, FaShieldAlt, FaDiscord, FaYoutube } from 'react-icons/fa';
+import { SiTryhackme } from 'react-icons/si';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getAvatarUrl } from '../config/constants';
 import PageHeader from '../components/PageHeader';
-import Card from '../components/Card';
 import Input from '../components/Input';
 import Textarea from '../components/Textarea';
 import FileUpload from '../components/FileUpload';
@@ -26,6 +26,19 @@ const specialtiesOptions = [
   'OSINT',
   'Cryptography',
   'IoT Security',
+  'Digital Forensics',
+  'Incident Response',
+  'Threat Hunting',
+  'DevSecOps',
+  'Application Security',
+  'SCADA / ICS Security',
+  'Wireless Security',
+  'Social Engineering',
+  'Red Teaming',
+  'Blue Teaming',
+  'API Security',
+  'Binary Exploitation',
+  'Kernel Hacking',
   'Other',
 ];
 
@@ -33,6 +46,7 @@ const Profile = () => {
   const { user, updateUser } = useAuthStore();
   const queryClient = useQueryClient();
   const { addToast } = useToastStore();
+  
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
     bio: user?.bio || '',
@@ -43,16 +57,22 @@ const Profile = () => {
       website: user?.socialLinks?.website || '',
       hackerone: user?.socialLinks?.hackerone || '',
       bugcrowd: user?.socialLinks?.bugcrowd || '',
+      discord: user?.socialLinks?.discord || '',
+      youtube: user?.socialLinks?.youtube || '',
+      tryhackme: user?.socialLinks?.tryhackme || '',
     },
     specialties: user?.specialties || [],
   });
+
   const [upgradeData, setUpgradeData] = useState({
-    channelName: '',
-    specialties: [],
+    channelName: user?.channelName || '',
+    specialties: user?.specialties || [],
   });
+
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [showDowngradeConfirm, setShowDowngradeConfirm] = useState(false);
+  const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
 
   const updateMutation = useMutation((data) => authAPI.updateProfile(data), {
     onSuccess: (response) => {
@@ -70,6 +90,7 @@ const Profile = () => {
       updateUser(response.data.data);
       queryClient.invalidateQueries('me');
       addToast({ type: 'success', message: 'Successfully upgraded to streamer account!' });
+      setShowUpgradeConfirm(false);
     },
     onError: (err) => {
       addToast({ type: 'error', message: err.response?.data?.message || 'Upgrade failed' });
@@ -80,7 +101,7 @@ const Profile = () => {
     onSuccess: (response) => {
       updateUser(response.data.data);
       queryClient.invalidateQueries('me');
-      addToast({ type: 'success', message: 'Successfully downgraded to viewer account' });
+      addToast({ type: 'info', message: 'Successfully downgraded to viewer account' });
     },
     onError: (err) => {
       addToast({ type: 'error', message: err.response?.data?.message || 'Downgrade failed' });
@@ -119,262 +140,262 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       setAvatarFile(file);
-      // Create preview
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result);
-      };
+      reader.onloadend = () => setAvatarPreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Create FormData to support file upload
     const data = new FormData();
     data.append('displayName', formData.displayName);
     data.append('bio', formData.bio);
     data.append('socialLinks', JSON.stringify(formData.socialLinks));
     data.append('specialties', JSON.stringify(formData.specialties));
-
-    if (avatarFile) {
-      data.append('avatar', avatarFile);
-    }
-
+    if (avatarFile) data.append('avatar', avatarFile);
     updateMutation.mutate(data);
   };
 
   const handleUpgradeSubmit = (e) => {
-    e.preventDefault();
-    upgradeMutation.mutate(upgradeData);
+    if (e) e.preventDefault();
+    if (!upgradeData.channelName.trim()) {
+      return addToast({ type: 'error', message: 'Please enter a channel name' });
+    }
+    
+    // If they already have a name, just reactivate without the warning
+    if (user?.channelName) {
+      upgradeMutation.mutate(upgradeData);
+    } else {
+      setShowUpgradeConfirm(true);
+    }
   };
 
   return (
-    <div className="px-6 py-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <Card>
-          <PageHeader
-            icon={FaSave}
-            title="Profile Settings"
-            subtitle="Manage your account information"
-          />
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Avatar Upload */}
-            <FileUpload
-              label="Profile Picture"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              previewUrl={
-                avatarPreview ||
-                getAvatarUrl(user?.avatar)
-              }
-              helpText="JPG, PNG, GIF (Max 5MB)"
-              variant="avatar"
-            />
-
-            {/* Display Name */}
-            <Input
-              label="Display Name"
-              type="text"
-              name="displayName"
-              value={formData.displayName}
-              onChange={handleChange}
-              icon={FaUser}
-              placeholder="Your display name"
-            />
-
-            {/* Bio */}
-            <Textarea
-              label="Bio"
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              rows={4}
-              maxLength={500}
-              placeholder="Tell us about yourself..."
-              showCount
-            />
-
-            {/* Specialties */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
-                Specialties
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {specialtiesOptions.map((specialty) => (
-                  <button
-                    key={specialty}
-                    type="button"
-                    onClick={() => handleSpecialtyToggle(specialty)}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition border ${
-                      formData.specialties.includes(specialty)
-                        ? 'bg-primary-600 hover:bg-primary-700 text-white border-primary-700'
-                        : 'bg-dark-900 hover:bg-dark-800 text-gray-300 border-dark-700'
-                    }`}
-                  >
-                    {specialty}
-                  </button>
-                ))}
+    <div className="px-6 py-10 max-w-7xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-12">
+        
+        {/* Left Side: Navigation */}
+        <aside className="lg:w-[280px] flex-shrink-0">
+          <div className="sticky top-24 space-y-8">
+            <div className="flex flex-col items-center text-center px-4">
+              <div className="relative mb-4 group">
+                <img 
+                  src={avatarPreview || getAvatarUrl(user?.avatar)} 
+                  alt={user?.username} 
+                  className="w-24 h-24 rounded-full object-cover border-2 border-dark-800 transition-colors group-hover:border-primary-500"
+                />
               </div>
+              <h2 className="text-lg font-bold text-white">{user?.displayName || user?.username}</h2>
+              <p className="text-sm text-gray-500 italic mt-1">@{user?.username}</p>
             </div>
 
-            {/* Social Links */}
-            <div>
-              <h3 className="text-base font-semibold mb-3 text-gray-200">Social Links</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Twitter"
-                  type="url"
-                  name="social_twitter"
-                  value={formData.socialLinks.twitter}
-                  onChange={handleChange}
-                  icon={FaTwitter}
-                  placeholder="https://twitter.com/username"
-                />
+            <nav className="space-y-1">
+              <a href="#identity" className="flex items-center gap-3 px-4 py-2.5 rounded-md text-gray-400 hover:text-white hover:bg-dark-900 transition text-sm font-medium">
+                <FaUser size={14} /> Identity
+              </a>
+              <a href="#expertise" className="flex items-center gap-3 px-4 py-2.5 rounded-md text-gray-400 hover:text-white hover:bg-dark-900 transition text-sm font-medium">
+                <FaBug size={14} /> Expertise
+              </a>
+              <a href="#social" className="flex items-center gap-3 px-4 py-2.5 rounded-md text-gray-400 hover:text-white hover:bg-dark-900 transition text-sm font-medium">
+                <FaLink size={14} /> Social Links
+              </a>
+              <a href="#streamer" className="flex items-center gap-3 px-4 py-2.5 rounded-md text-gray-400 hover:text-white hover:bg-dark-900 transition text-sm font-medium border-t border-dark-800 mt-2 pt-4">
+                <FaVideo size={14} /> Creator Settings
+              </a>
+            </nav>
+          </div>
+        </aside>
+
+        {/* Right Side: Content */}
+        <main className="flex-1 space-y-12">
+          
+          <form onSubmit={handleSubmit} className="space-y-12">
+            
+            {/* Identity */}
+            <div id="identity" className="scroll-mt-24">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-1">Public Identity</h3>
+                <p className="text-sm text-gray-500">Manage how you appear to the community.</p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-center gap-8 py-6 px-8 bg-dark-900 border border-dark-800 rounded-md">
+                  <FileUpload
+                    onChange={handleAvatarChange}
+                    previewUrl={avatarPreview || getAvatarUrl(user?.avatar)}
+                    variant="avatar"
+                  />
+                  <div className="text-center sm:text-left">
+                    <h4 className="font-bold text-gray-200">Change Profile Picture</h4>
+                    <p className="text-xs text-gray-500 mt-1">Recommended size: 400x400px</p>
+                  </div>
+                </div>
 
                 <Input
-                  label="GitHub"
-                  type="url"
-                  name="social_github"
-                  value={formData.socialLinks.github}
+                  label="Display Name"
+                  name="displayName"
+                  value={formData.displayName}
                   onChange={handleChange}
-                  icon={FaGithub}
-                  placeholder="https://github.com/username"
+                  placeholder="Your public alias"
+                  icon={FaUserEdit}
                 />
-
-                <Input
-                  label="LinkedIn"
-                  type="url"
-                  name="social_linkedin"
-                  value={formData.socialLinks.linkedin}
+                
+                <Textarea
+                  label="Bio / Research Focus"
+                  name="bio"
+                  value={formData.bio}
                   onChange={handleChange}
-                  icon={FaLinkedin}
-                  placeholder="https://linkedin.com/in/username"
-                />
-
-                <Input
-                  label="Website"
-                  type="url"
-                  name="social_website"
-                  value={formData.socialLinks.website}
-                  onChange={handleChange}
-                  icon={FaGlobe}
-                  placeholder="https://yourwebsite.com"
-                />
-
-                <Input
-                  label="HackerOne"
-                  type="url"
-                  name="social_hackerone"
-                  value={formData.socialLinks.hackerone}
-                  onChange={handleChange}
-                  icon={FaBug}
-                  placeholder="https://hackerone.com/username"
-                />
-
-                <Input
-                  label="Bugcrowd"
-                  type="url"
-                  name="social_bugcrowd"
-                  value={formData.socialLinks.bugcrowd}
-                  onChange={handleChange}
-                  icon={FaBug}
-                  placeholder="https://bugcrowd.com/username"
+                  rows={4}
+                  placeholder="Share a brief intro about your expertise..."
+                  maxLength={500}
+                  showCount
                 />
               </div>
             </div>
 
-            {/* Save Button */}
-            <Button
-              type="submit"
-              disabled={updateMutation.isLoading}
-              loading={updateMutation.isLoading}
-              icon={FaSave}
-              fullWidth
-              size="lg"
-            >
-              {updateMutation.isLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </form>
-        </Card>
+            {/* Expertise */}
+            <div id="expertise" className="scroll-mt-24">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-1">Expertise</h3>
+                <p className="text-sm text-gray-500">Tag your skills to personalize your experience.</p>
+              </div>
 
-        {/* Upgrade/Downgrade Section */}
-        {!user?.isStreamer ? (
-          <Card>
-            <PageHeader
-              icon={FaVideo}
-              title="Become a Streamer"
-              subtitle="Share your knowledge with the community"
-            />
+              <div className="flex flex-wrap gap-2">
+                {specialtiesOptions.map((opt) => {
+                  const isActive = formData.specialties.includes(opt);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => handleSpecialtyToggle(opt)}
+                      className={`px-4 py-2 rounded-md text-xs font-medium transition border ${
+                        isActive
+                          ? 'bg-primary-600 border-primary-500 text-white'
+                          : 'bg-dark-900 border-dark-800 text-gray-400 hover:border-dark-700'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-            <p className="text-gray-300 mb-6">
-              Upgrade your account to start uploading videos and sharing your cybersecurity expertise with thousands of enthusiasts worldwide.
-            </p>
+            {/* Socials */}
+            <div id="social" className="scroll-mt-24">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-1">Social Links</h3>
+                <p className="text-sm text-gray-500">Connect with the community across other platforms.</p>
+              </div>
 
-            <form onSubmit={handleUpgradeSubmit} className="space-y-4">
-              <Input
-                label="Channel Name"
-                required
-                type="text"
-                value={upgradeData.channelName}
-                onChange={(e) => setUpgradeData({ ...upgradeData, channelName: e.target.value })}
-                placeholder="Your channel name"
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label="Twitter" name="social_twitter" value={formData.socialLinks.twitter} onChange={handleChange} icon={FaTwitter} placeholder="https://twitter.com/username" />
+                <Input label="GitHub" name="social_github" value={formData.socialLinks.github} onChange={handleChange} icon={FaGithub} placeholder="https://github.com/username" />
+                <Input label="LinkedIn" name="social_linkedin" value={formData.socialLinks.linkedin} onChange={handleChange} icon={FaLinkedin} placeholder="https://linkedin.com/in/username" />
+                <Input label="Discord" name="social_discord" value={formData.socialLinks.discord} onChange={handleChange} icon={FaDiscord} placeholder="Username or Server invite" />
+                <Input label="YouTube" name="social_youtube" value={formData.socialLinks.youtube} onChange={handleChange} icon={FaYoutube} placeholder="https://youtube.com/@channel" />
+                <Input label="TryHackMe" name="social_tryhackme" value={formData.socialLinks.tryhackme} onChange={handleChange} icon={SiTryhackme} placeholder="Username" />
+                <Input label="HackerOne" name="social_hackerone" value={formData.socialLinks.hackerone} onChange={handleChange} icon={FaBug} placeholder="Username" />
+                <Input label="Bugcrowd" name="social_bugcrowd" value={formData.socialLinks.bugcrowd} onChange={handleChange} icon={FaBug} placeholder="Username" />
+                <Input label="Website" name="social_website" value={formData.socialLinks.website} onChange={handleChange} icon={FaGlobe} placeholder="https://yourwebsite.com" />
+              </div>
+            </div>
 
+            <div className="flex justify-end pt-4">
               <Button
                 type="submit"
-                disabled={upgradeMutation.isLoading}
-                loading={upgradeMutation.isLoading}
-                icon={FaVideo}
-                fullWidth
-                size="lg"
+                loading={updateMutation.isLoading}
+                icon={FaSave}
+                className="px-10"
               >
-                {upgradeMutation.isLoading ? 'Upgrading...' : 'Upgrade to Streamer'}
+                Save Profile
               </Button>
-            </form>
-          </Card>
-        ) : (
-          <Card>
-            <PageHeader
-              icon={FaVideo}
-              title="Streamer Account"
-              subtitle="Manage your content creator status"
-              variant="danger"
-            />
-
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
-              <p className="text-sm text-yellow-200">
-                <strong>Warning:</strong> Downgrading to a viewer account will remove your ability to upload videos. Your existing videos will remain public, but you won't be able to upload new ones.
-              </p>
             </div>
+          </form>
 
-            <Button
-              onClick={() => setShowDowngradeConfirm(true)}
-              disabled={downgradeMutation.isLoading}
-              loading={downgradeMutation.isLoading}
-              variant="danger"
-              fullWidth
-              size="lg"
-            >
-              {downgradeMutation.isLoading ? 'Downgrading...' : 'Downgrade to Viewer'}
-            </Button>
-          </Card>
-        )}
-
-        {/* Downgrade Confirmation Dialog */}
-        <ConfirmDialog
-          isOpen={showDowngradeConfirm}
-          onClose={() => setShowDowngradeConfirm(false)}
-          onConfirm={() => downgradeMutation.mutate()}
-          title="Downgrade to Viewer Account"
-          message="Are you sure you want to downgrade to a viewer account? You will lose access to upload new videos. Your existing videos will remain public."
-          confirmText="Yes, Downgrade"
-          cancelText="Cancel"
-          type="danger"
-        />
+          {/* Streamer Controls */}
+          <div id="streamer" className="scroll-mt-24 pt-6">
+            {!user?.isStreamer ? (
+              <div className="bg-dark-900 border border-dark-800 rounded-md p-8">
+                <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-xl font-bold text-white">Unlock Streamer Status</h3>
+                    <p className="text-sm text-gray-500">
+                      {user?.channelName 
+                        ? `Welcome back! Re-activate your channel "${user.channelName}".` 
+                        : "Create your channel to start uploading and sharing cybersecurity content."}
+                    </p>
+                  </div>
+                  <form onSubmit={handleUpgradeSubmit} className="flex flex-col gap-3 w-full md:w-auto">
+                    <input
+                      type="text"
+                      placeholder="Channel Name"
+                      maxLength={30}
+                      className="w-full md:w-[450px] bg-dark-950 border border-dark-700 rounded px-4 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500 transition-colors disabled:opacity-50"
+                      value={upgradeData.channelName}
+                      onChange={(e) => setUpgradeData({...upgradeData, channelName: e.target.value})}
+                      disabled={!!user?.channelName}
+                    />
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                        {user?.channelName ? "Permanent Alias" : "Max 30 characters"}
+                      </span>
+                      <span className={`text-[10px] font-bold ${upgradeData.channelName.length >= 30 ? 'text-red-500' : 'text-gray-500'}`}>
+                        {upgradeData.channelName.length}/30
+                      </span>
+                    </div>
+                    <Button
+                      type="submit"
+                      loading={upgradeMutation.isLoading}
+                      fullWidth
+                    >
+                      Activate Channel
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-dark-900 border border-dark-800 rounded-md p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary-600/10 rounded-full text-primary-500">
+                    <FaShieldAlt size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white">Streamer Status Active</h3>
+                    <p className="text-sm text-gray-500">Channel: {user.channelName}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowDowngradeConfirm(true)}
+                  className="px-5 py-2.5 rounded-md bg-dark-800 border border-dark-700 text-sm font-bold text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all shadow-sm"
+                >
+                  Deactivate Channel
+                </button>
+              </div>
+            )}
+          </div>
+        </main>
       </div>
+
+      <ConfirmDialog
+        isOpen={showUpgradeConfirm}
+        onClose={() => setShowUpgradeConfirm(false)}
+        onConfirm={() => upgradeMutation.mutate(upgradeData)}
+        title="Activate Streamer Channel"
+        message={`Warning: The channel name "${upgradeData.channelName}" will be permanently linked to your account. This name cannot be changed later, even if you deactivate your channel. Do you want to proceed?`}
+        confirmText="Activate Channel"
+        type="info"
+      />
+
+      <ConfirmDialog
+        isOpen={showDowngradeConfirm}
+        onClose={() => setShowDowngradeConfirm(false)}
+        onConfirm={() => downgradeMutation.mutate()}
+        title="Confirm Deactivation"
+        message={`Are you sure? Your channel name "${user?.channelName}" will remain reserved for you, but you will lose streaming privileges.`}
+        confirmText="Confirm"
+      />
     </div>
   );
 };

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { userAPI, channelAPI } from '../services/api';
 import VideoCard from '../components/VideoCard';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaGithub, FaTwitter, FaLinkedin, FaGlobe, FaBug, FaBell, FaRegBell } from 'react-icons/fa';
+import { FaGithub, FaTwitter, FaLinkedin, FaGlobe, FaBug, FaBell, FaRegBell, FaVideo } from 'react-icons/fa';
 import { getAvatarUrl } from '../config/constants';
 
 const Channel = () => {
@@ -114,9 +114,25 @@ const Channel = () => {
   const channel = channelData?.data?.data;
 
   if (!channel) {
+    const isOwnProfile = user?.username === username;
     return (
-      <div className="px-6 py-6 text-center">
-        <p className="text-xl text-gray-400">Channel not found</p>
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+        <FaVideo className="text-gray-700 mb-4" size={48} />
+        <h2 className="text-lg font-medium text-white mb-1">
+          {isOwnProfile ? "No Channel Created" : "Channel Not Found"}
+        </h2>
+        <p className="text-gray-500 max-w-xs mx-auto">
+          {isOwnProfile ? (
+            <>
+              You haven't set up your channel yet.{' '}
+              <Link to="/profile" className="text-primary-500 hover:text-primary-400 font-medium transition">
+                Become a streamer
+              </Link>
+            </>
+          ) : (
+            "The channel you are looking for isn't available."
+          )}
+        </p>
       </div>
     );
   }

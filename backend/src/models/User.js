@@ -61,7 +61,9 @@ const userSchema = new mongoose.Schema({
   },
   channelName: {
     type: String,
-    trim: true
+    trim: true,
+    unique: true,
+    sparse: true
   },
   specialties: [{
     type: String,
@@ -78,6 +80,19 @@ const userSchema = new mongoose.Schema({
       'OSINT',
       'Cryptography',
       'IoT Security',
+      'Digital Forensics',
+      'Incident Response',
+      'Threat Hunting',
+      'DevSecOps',
+      'Application Security',
+      'SCADA / ICS Security',
+      'Wireless Security',
+      'Social Engineering',
+      'Red Teaming',
+      'Blue Teaming',
+      'API Security',
+      'Binary Exploitation',
+      'Kernel Hacking',
       'Other'
     ]
   }],
@@ -87,7 +102,10 @@ const userSchema = new mongoose.Schema({
     linkedin: String,
     website: String,
     hackerone: String,
-    bugcrowd: String
+    bugcrowd: String,
+    discord: String,
+    youtube: String,
+    tryhackme: String
   },
   subscribers: [{
     type: mongoose.Schema.Types.ObjectId,

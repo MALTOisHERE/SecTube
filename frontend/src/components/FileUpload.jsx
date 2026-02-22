@@ -47,16 +47,6 @@ const FileUpload = ({
         )}
         <div className="flex items-center gap-4">
           <div className="relative group">
-            <img
-              src={previewUrl || '/default-avatar.svg'}
-              alt="Avatar"
-              className="w-20 h-20 rounded-full object-cover border border-dark-700"
-            />
-            <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
-              <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium">Change</span>
-            </div>
-          </div>
-          <div>
             <input
               type="file"
               accept={accept}
@@ -65,6 +55,18 @@ const FileUpload = ({
               className="hidden"
               id="avatar-upload-input"
             />
+            <label htmlFor="avatar-upload-input" className="cursor-pointer block relative">
+              <img
+                src={previewUrl || '/default-avatar.svg'}
+                alt="Avatar"
+                className="w-20 h-20 rounded-full object-cover border border-dark-700"
+              />
+              <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
+                <span className="text-white opacity-0 group-hover:opacity-100 text-[10px] font-black uppercase tracking-widest">Change</span>
+              </div>
+            </label>
+          </div>
+          <div>
             <label
               htmlFor="avatar-upload-input"
               className="inline-flex items-center gap-2 cursor-pointer bg-dark-700 hover:bg-dark-600 px-3 py-2 rounded-md transition text-sm font-medium border border-dark-600"
