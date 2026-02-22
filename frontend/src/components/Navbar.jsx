@@ -118,23 +118,13 @@ const Navbar = () => {
 
                   {/* Menu Items */}
                   <div className="py-1">
-                    {user?.isStreamer && (
-                      <Link
-                        to="/upload"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
-                      >
-                        <FaUpload size={14} />
-                        <span>Upload Video</span>
-                      </Link>
-                    )}
                     <Link
-                      to="/profile"
+                      to="/settings"
                       onClick={() => setShowUserMenu(false)}
                       className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
                     >
                       <FaCog size={14} />
-                      <span>Your Profile</span>
+                      <span>Settings</span>
                     </Link>
                     {user?.isStreamer && (
                       <Link
@@ -143,7 +133,7 @@ const Navbar = () => {
                         className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
                       >
                         <FaVideo size={14} />
-                        <span>Your Channel</span>
+                        <span>My Channel</span>
                       </Link>
                     )}
                   </div>

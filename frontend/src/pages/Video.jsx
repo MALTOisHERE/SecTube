@@ -412,30 +412,12 @@ const Video = () => {
   // Show processing state
   if (video.processingStatus === 'processing') {
     return (
-      <div className="px-6 py-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-dark-800 rounded-xl p-8 text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            </div>
-            <h2 className="text-2xl font-bold mb-3">Processing Your Video</h2>
-            <p className="text-gray-400 mb-6">
-              Your video is being processed and will be available shortly. This page will automatically update when processing is complete.
-            </p>
-            <div className="bg-dark-900 rounded-lg p-4 mb-4">
-              <h3 className="font-semibold mb-2">{video.title}</h3>
-              <div className="flex items-center justify-center gap-4 text-sm text-gray-400">
-                <span>Category: {video.category}</span>
-                <span>•</span>
-                <span>Difficulty: {video.difficulty}</span>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-sm text-primary-400">
-              <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
-              <span>Processing video... Please wait</span>
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4 min-h-[70vh]">
+        <div className="w-12 h-12 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 className="text-lg font-medium text-white mb-1">Processing Your Content</h2>
+        <p className="text-gray-500 max-w-xs mx-auto">
+          We're currently transcoding your video for multiple qualities. This page will update automatically.
+        </p>
       </div>
     );
   }
@@ -443,24 +425,18 @@ const Video = () => {
   // Show failed state
   if (video.processingStatus === 'failed') {
     return (
-      <div className="px-6 py-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-dark-800 rounded-xl p-8 text-center">
-            <div className="flex justify-center mb-4">
-              <FaExclamationTriangle className="text-red-500" size={48} />
-            </div>
-            <h2 className="text-2xl font-bold mb-3">Processing Failed</h2>
-            <p className="text-gray-400 mb-4">
-              There was an error processing your video. Please try uploading again or contact support if the issue persists.
-            </p>
-            <Link
-              to="/upload"
-              className="inline-block px-6 py-3 bg-primary-600 hover:bg-primary-700 rounded-lg transition"
-            >
-              Upload Another Video
-            </Link>
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4 min-h-[70vh]">
+        <FaExclamationTriangle className="text-gray-700 mb-4" size={48} />
+        <h2 className="text-lg font-medium text-white mb-1">Processing Failed</h2>
+        <p className="text-gray-500 max-w-xs mx-auto mb-6">
+          There was an error processing your video. Please try uploading again.
+        </p>
+        <Link
+          to="/settings#upload"
+          className="text-primary-500 hover:text-primary-400 font-medium transition"
+        >
+          Upload Another Video
+        </Link>
       </div>
     );
   }

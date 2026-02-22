@@ -5,10 +5,9 @@ import Toast from './components/Toast';
 import Home from './pages/Home';
 import Video from './pages/Video';
 import Channel from './pages/Channel';
-import Upload from './pages/Upload';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import AuthSuccess from './pages/AuthSuccess';
 import Browse from './pages/Browse';
 import Search from './pages/Search';
@@ -47,18 +46,10 @@ function App() {
           />
           <Route path="/auth-success" element={<AuthSuccess />} />
           <Route
-            path="/upload"
+            path="/settings"
             element={
               <ProtectedRoute>
-                <Upload />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
+                <Settings />
               </ProtectedRoute>
             }
           />

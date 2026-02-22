@@ -36,7 +36,7 @@ const CustomSelect = ({ label, icon: Icon, options, value, onChange }) => {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full flex items-center justify-between bg-dark-950 border ${
+          className={`w-full flex items-center justify-between bg-dark-900 border ${
             isOpen ? 'border-primary-500 ring-1 ring-primary-500/20' : 'border-dark-700 hover:border-dark-600'
           } rounded-md px-4 py-2.5 text-sm text-white transition-all duration-200`}
         >

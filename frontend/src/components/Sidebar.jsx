@@ -22,7 +22,7 @@ const Sidebar = () => {
     { path: '/history', icon: FaHistory, label: 'History' },
     { path: '/saved', icon: FaBookmark, label: 'Saved' },
     { path: '/subscriptions', icon: FaBell, label: 'Subscriptions' },
-    ...(user?.isStreamer ? [{ path: `/channel/${user?.username}`, icon: FaVideo, label: 'Your Channel' }] : []),
+    ...(user?.isStreamer ? [{ path: `/channel/${user?.username}`, icon: FaVideo, label: 'My Channel' }] : []),
   ];
 
   return (
