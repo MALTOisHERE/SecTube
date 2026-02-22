@@ -54,9 +54,10 @@ const ForgotPassword = () => {
       localStorage.setItem('reset_cooldown_expiry', expiry.toString());
       setCountdown(30);
     } catch (err) {
+      const message = err.response?.data?.message || 'Email service is currently unavailable. Please try again later.';
       addToast({
         type: 'error',
-        message: err.response?.data?.message || 'Something went wrong. Please try again.'
+        message: message
       });
     } finally {
       setLoading(false);

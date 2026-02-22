@@ -83,9 +83,10 @@ const Register = () => {
       });
       navigate('/login');
     } catch (err) {
+      const message = err.response?.data?.message || 'Account creation service is currently slow or unavailable. Please try again.';
       addToast({
         type: 'error',
-        message: err.response?.data?.message || 'Registration failed. Please try again.'
+        message: message
       });
     } finally {
       setLoading(false);
