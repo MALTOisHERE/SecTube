@@ -27,7 +27,12 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - Organize content by categories and tags
 - Specify tools used and difficulty levels
 
-### Platform Features
+### Security & Platform Features
+- **Two-Factor Authentication (2FA)**: TOTP-based protection (Google Authenticator, Authy).
+- **Silent Signup Protocol**: Advanced protection against user enumeration during registration.
+- **Email Verification**: Mandatory verification flow for account activation.
+- **Secure Password Recovery**: Robust, rate-limited email-driven reset flow.
+- **Anti-Enumeration Login**: Standardized generic error responses for all auth failures.
 - User authentication with JWT
 - SSO Integration with **GitHub** and **Google**
 - Role-based access control (Viewer, Streamer, Admin)
@@ -48,6 +53,9 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - **FFmpeg** for video processing
 - **Multer** for file uploads
 - **bcryptjs** for password hashing
+- **speakeasy & qrcode** for TOTP 2FA
+- **nodemailer** for secure email delivery
+- **express-rate-limit** for brute-force protection
 
 ### Frontend
 - **React 18** with Hooks
@@ -237,6 +245,11 @@ Content-Type: application/json
 }
 ```
 
+#### Verify Email
+```http
+GET /api/auth/verify-email/:token
+```
+
 #### Login
 ```http
 POST /api/auth/login
@@ -246,6 +259,36 @@ Content-Type: application/json
   "email": "john@example.com",
   "password": "password123"
 }
+```
+
+#### Verify 2FA Login
+```http
+POST /api/auth/verify-login-2fa
+Content-Type: application/json
+
+{
+  "userId": "user_id_here",
+  "token": "123456"
+}
+```
+
+#### Password Recovery
+```http
+POST /api/auth/forgotpassword
+Content-Type: application/json
+{ "email": "john@example.com" }
+
+PUT /api/auth/resetpassword/:token
+Content-Type: application/json
+{ "password": "newpassword123" }
+```
+
+#### Security Management
+```http
+POST /api/auth/setup-2fa
+POST /api/auth/verify-2fa
+POST /api/auth/disable-2fa
+PUT /api/auth/updatepassword
 ```
 
 #### Get Current User
