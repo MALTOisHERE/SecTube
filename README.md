@@ -13,6 +13,9 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - Filter by category (Bug Bounty, Web Security, Penetration Testing, etc.)
 - Filter by difficulty level (Beginner to Expert)
 - Subscribe to your favorite security researchers
+- Personalized subscription feed with the latest content
+- Watch History to track your learning journey
+- Saved Videos for quick access to important tutorials
 - Like, comment, and engage with the community
 - Personalized recommendations
 
@@ -26,7 +29,9 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 
 ### Platform Features
 - User authentication with JWT
+- SSO Integration with **GitHub** and **Google**
 - Role-based access control (Viewer, Streamer, Admin)
+- Modern Cyber UI with animated backgrounds and high-tech aesthetic
 - Video on Demand (VOD) with adaptive quality
 - Automatic thumbnail generation
 - Real-time video processing with FFmpeg
@@ -39,6 +44,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - **Node.js** with Express.js
 - **MongoDB** with Mongoose ODM
 - **JWT** for authentication
+- **Passport.js** for GitHub/Google SSO
 - **FFmpeg** for video processing
 - **Multer** for file uploads
 - **bcryptjs** for password hashing
@@ -132,6 +138,15 @@ THUMBNAIL_PATH=./thumbnails
 
 # Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:5000
+
+# GitHub OAuth
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 # FFmpeg paths (adjust if needed)
 FFMPEG_PATH=/usr/bin/ffmpeg
@@ -185,6 +200,25 @@ npm run build
 cd ../backend
 npm start
 ```
+
+## 🔑 SSO Configuration Guide
+
+To enable GitHub and Google login, you must register OAuth applications on their respective platforms.
+
+### 1. GitHub SSO Setup
+1.  Go to [GitHub Developer Settings](https://github.com/settings/developers).
+2.  Click **New OAuth App**.
+3.  **Homepage URL**: `http://localhost:5173`
+4.  **Authorization callback URL**: `http://localhost:5000/api/auth/github/callback`
+5.  Generate a **Client Secret** and copy both the ID and Secret to your `.env`.
+
+### 2. Google SSO Setup
+1.  Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2.  Create a new project and navigate to **APIs & Services > Credentials**.
+3.  Click **Create Credentials > OAuth client ID** (Select *Web application*).
+4.  **Authorized JavaScript origins**: `http://localhost:5173`
+5.  **Authorized redirect URIs**: `http://localhost:5000/api/auth/google/callback`
+6.  Copy the **Client ID** and **Client Secret** to your `.env`.
 
 ## API Documentation
 
