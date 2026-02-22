@@ -26,6 +26,9 @@ const __dirname = path.dirname(__filename);
 // Initialize Express app
 const app = express();
 
+// Trust proxy (required for rate limiting behind Render/Vercel)
+app.set('trust proxy', true);
+
 // Connect to database
 connectDB();
 
