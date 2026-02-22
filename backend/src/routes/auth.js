@@ -13,7 +13,8 @@ import {
   setup2FA,
   verify2FA,
   disable2FA,
-  verifyLogin2FA
+  verifyLogin2FA,
+  verifyEmail
 } from '../controllers/auth.js';
 import { protect } from '../middleware/auth.js';
 import { avatarUploadMiddleware } from '../middleware/avatarUpload.js';
@@ -52,6 +53,7 @@ router.post('/login', loginValidation, login);
 router.post('/forgotpassword', forgotPasswordLimiter, forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
 router.post('/verify-login-2fa', verifyLogin2FA);
+router.get('/verify-email/:token', verifyEmail);
 
 // GitHub SSO routes
 router.get('/github', (req, res, next) => {

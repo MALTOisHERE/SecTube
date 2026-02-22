@@ -77,9 +77,11 @@ const Register = () => {
       // Only send the necessary data to the API
       const { confirmEmail, confirmPassword, ...registerData } = formData;
       const response = await authAPI.register(registerData);
-      login(response.data.user, response.data.token);
-      addToast({ type: 'success', message: 'Account created successfully! Welcome to SecTube.' });
-      navigate('/');
+      addToast({ 
+        type: 'success', 
+        message: response.data.message || 'Account request received. Check your email.' 
+      });
+      navigate('/login');
     } catch (err) {
       addToast({
         type: 'error',

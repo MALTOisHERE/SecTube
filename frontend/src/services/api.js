@@ -43,6 +43,7 @@ export const authAPI = {
   verify2FA: (data) => api.post('/auth/verify-2fa', data),
   disable2FA: (data) => api.post('/auth/disable-2fa', data),
   verifyLogin2FA: (data) => api.post('/auth/verify-login-2fa', data),
+  verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
 };
 
 // Video API

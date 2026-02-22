@@ -12,6 +12,8 @@ export const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      // For registration validation, we can still show errors (e.g. invalid email format)
+      // but we will handle existence checks differently
       return res.status(400).json({
         success: false,
         errors: errors.array()
@@ -22,22 +24,89 @@ export const register = async (req, res, next) => {
 
     // Check if user exists
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
+    
     if (userExists) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists with this email or username'
+      // SILENT SUCCESS: Send security email instead of error
+      try {
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/forgot-password`;
+        await sendEmail({
+          email: userExists.email,
+          subject: 'Security Alert: Registration Attempt',
+          html: `
+            <div style="font-family: sans-serif; padding: 40px 20px; text-align: center;">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 24px;">Security Alert</h1>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+                  Someone recently tried to register a SecTube account with your email address. 
+                  If this was you, you already have an account! You can sign in directly or reset your password if you've forgotten it.
+                </p>
+                <a href="${resetUrl}" style="display: inline-block; background-color: #0284c7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;">
+                  Reset Password
+                </a>
+                <p style="color: #6b7280; font-size: 12px; margin-top: 32px;">
+                  If you did not request this, please ignore this email. Your account remains secure.
+                </p>
+              </div>
+            </div>
+          `
+        });
+      } catch (err) {
+        console.error('Registration security email failed:', err);
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Account request received. Check your email.'
       });
     }
 
-    // Create user
+    // Create user (unverified)
     const user = await User.create({
       username,
       email,
       password,
-      displayName: username
+      displayName: username,
+      isVerified: false
     });
 
-    sendTokenResponse(user, 201, res);
+    // Generate verification token
+    const verificationToken = user.getEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create verification URL
+    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email/${verificationToken}`;
+
+    // Send verification email
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Verify Your SecTube Account',
+        html: `
+          <div style="font-family: sans-serif; padding: 40px 20px; text-align: center;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 24px;">Welcome to SecTube</h1>
+              <p style="font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+                Thank you for joining our community of researchers. Please verify your email to activate your account.
+              </p>
+              <a href="${verifyUrl}" style="display: inline-block; background-color: #0284c7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;">
+                Verify Email
+              </a>
+              <p style="color: #6b7280; font-size: 12px; margin-top: 32px;">
+                This link will expire in 24 hours.
+              </p>
+            </div>
+          </div>
+        `
+      });
+    } catch (err) {
+      console.error('Verification email failed:', err);
+      // In a real prod environment, you might want to handle this differently
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Account request received. Check your email.'
+    });
   } catch (error) {
     next(error);
   }
@@ -70,6 +139,14 @@ export const login = async (req, res, next) => {
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Check if email is verified
+    if (!user.isVerified) {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -513,6 +590,38 @@ export const verifyLogin2FA = async (req, res, next) => {
         message: 'Invalid verification code'
       });
     }
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Verify Email
+export const verifyEmail = async (req, res, next) => {
+  try {
+    // Get hashed token
+    const emailVerificationToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      emailVerificationToken,
+      emailVerificationExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification token'
+      });
+    }
+
+    user.isVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpire = undefined;
+    await user.save();
 
     sendTokenResponse(user, 200, res);
   } catch (error) {

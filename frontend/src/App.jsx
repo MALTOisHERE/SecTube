@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import AuthSuccess from './pages/AuthSuccess';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
@@ -28,7 +29,7 @@ function App() {
   const { isOpen } = useSidebarStore();
   const { isAuthenticated } = useAuthStore();
   const location = useLocation();
-  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].some(path => location.pathname.startsWith(path));
+  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email'].some(path => location.pathname.startsWith(path));
   
   // Dev banner states: 'entering' | 'visible' | 'leaving' | 'hidden'
   const [bannerStatus, setBannerStatus] = useState('entering');
@@ -90,11 +91,11 @@ function App() {
                                 path="/register" 
                                 element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} 
                               />
-                              <Route path="/forgot-password" element={<ForgotPassword />} />
-                              <Route path="/reset-password/:resettoken" element={<ResetPassword />} />
-                              <Route path="/auth-success" element={<AuthSuccess />} />
-                    
-                    <Route path="/terms" element={<Terms />} />
+                                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                                        <Route path="/reset-password/:resettoken" element={<ResetPassword />} />
+                                        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+                                        <Route path="/auth-success" element={<AuthSuccess />} />
+                                                  <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route
                       path="/settings"

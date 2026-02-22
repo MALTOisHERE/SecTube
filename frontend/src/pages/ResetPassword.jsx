@@ -34,10 +34,9 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      const response = await authAPI.resetPassword(resettoken, { password: formData.password });
-      login(response.data.user, response.data.token);
-      addToast({ type: 'success', message: 'Password reset successful! Welcome back.' });
-      navigate('/');
+      await authAPI.resetPassword(resettoken, { password: formData.password });
+      addToast({ type: 'success', message: 'Password reset successful! Please sign in with your new password.' });
+      navigate('/login');
     } catch (err) {
       addToast({
         type: 'error',
