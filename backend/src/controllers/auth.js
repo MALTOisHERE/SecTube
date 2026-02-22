@@ -125,8 +125,10 @@ export const login = async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    // Find user and include password
-    const user = await User.findOne({ email }).select('+password');
+    // Find user by email or username and include password
+    const user = await User.findOne({
+      $or: [{ email }, { username: email }]
+    }).select('+password');
 
     if (!user) {
       return res.status(401).json({
@@ -250,6 +252,32 @@ export const updateProfile = async (req, res, next) => {
       success: true,
       data: user
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update password
+export const updatePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id).select('+password');
+
+    // Check current password
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Set new password (will be hashed by pre-save hook)
+    user.password = newPassword;
+    await user.save();
+
+    sendTokenResponse(user, 200, res);
   } catch (error) {
     next(error);
   }

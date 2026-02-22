@@ -5,6 +5,7 @@ import {
   login,
   getMe,
   updateProfile,
+  updatePassword,
   upgradeToStreamer,
   downgradeToViewer,
   githubCallback,
@@ -76,6 +77,7 @@ router.get('/google/callback', passport.authenticate('google', { session: false,
 // Protected routes
 router.get('/me', protect, getMe);
 router.put('/profile', protect, avatarUploadMiddleware, updateProfile);
+router.put('/updatepassword', protect, updatePassword);
 router.post('/upgrade-to-streamer', protect, upgradeToStreamer);
 router.post('/downgrade-to-viewer', protect, downgradeToViewer);
 

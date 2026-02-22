@@ -50,6 +50,7 @@ if (isGithubEnabled) {
                 displayName: profile.displayName || profile.username || username,
                 avatar: profile._json.avatar_url || 'default-avatar.svg',
                 password: Math.random().toString(36).slice(-12),
+                isVerified: true
               });
             }
           }
@@ -101,6 +102,7 @@ if (isGoogleEnabled) {
                 displayName: profile.displayName || username,
                 avatar: profile._json.picture || 'default-avatar.svg',
                 password: Math.random().toString(36).slice(-12),
+                isVerified: true
               });
             }
           }

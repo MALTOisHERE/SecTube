@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI, videoAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug, FaFingerprint, FaLink, FaUserEdit, FaCheck, FaShieldAlt, FaDiscord, FaYoutube, FaUpload, FaImage, FaList, FaTags, FaTools, FaEye, FaFileUpload, FaMobileAlt, FaKey, FaChevronRight, FaTimes } from 'react-icons/fa';
+import { FaSave, FaVideo, FaUser, FaTwitter, FaGithub, FaLinkedin, FaGlobe, FaBug, FaFingerprint, FaLink, FaUserEdit, FaCheck, FaShieldAlt, FaDiscord, FaYoutube, FaUpload, FaImage, FaList, FaTags, FaTools, FaEye, FaFileUpload, FaMobileAlt, FaKey, FaChevronRight, FaTimes, FaEyeSlash, FaLock, FaEnvelope } from 'react-icons/fa';
 import { SiTryhackme } from 'react-icons/si';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { getAvatarUrl } from '../config/constants';
@@ -119,7 +119,25 @@ const Settings = () => {
   const [twoFactorToken, setTwoFactorToken] = useState('');
   const [isQRZoomed, setIsQRZoomed] = useState(false);
 
+  // Password Update State
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showUpdatePasswords, setShowUpdatePasswords] = useState(false);
+
   // Mutations
+  const passwordMutation = useMutation((data) => authAPI.updatePassword(data), {
+    onSuccess: () => {
+      addToast({ type: 'success', message: 'Master key updated successfully!' });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    },
+    onError: (err) => {
+      addToast({ type: 'error', message: err.response?.data?.message || 'Update failed' });
+    },
+  });
+
   const setup2FAMutation = useMutation(() => authAPI.setup2FA(), {
     onSuccess: (res) => {
       setQrCode(res.data.data.qrCode);
@@ -430,6 +448,15 @@ const Settings = () => {
                   placeholder="Your public alias"
                   icon={FaUserEdit}
                 />
+
+                <Input
+                  label="Registered Email"
+                  value={user?.email || ''}
+                  readOnly
+                  disabled
+                  icon={FaEnvelope}
+                  helpText="Primary contact for account recovery. Contact support to change."
+                />
                 
                 <Textarea
                   label="Bio / Research Focus"
@@ -504,11 +531,92 @@ const Settings = () => {
             </div>
           </form>
 
-          {/* Security (2FA) */}
-          <div id="security" className="scroll-mt-24">
-            <div className="flex items-center gap-4 mb-8">
+          {/* Security (2FA & Password) */}
+          <div id="security" className="scroll-mt-24 space-y-8">
+            <div className="flex items-center gap-4">
               <div className="w-1 h-8 bg-primary-500 rounded-full"></div>
-              <h3 className="text-lg font-bold text-white uppercase tracking-widest">Security</h3>
+              <h3 className="text-lg font-bold text-white uppercase tracking-widest">Security Protocols</h3>
+            </div>
+
+            {/* Password Update Card */}
+            <div className="bg-dark-900 border border-dark-800 rounded-md p-8">
+              <div className="flex items-center gap-4 mb-8 pb-6 border-b border-dark-800">
+                <div className="p-3 bg-primary-600/10 rounded-xl text-primary-500">
+                  <FaKey size={24} />
+                </div>
+                <div>
+                  <h4 className="text-white font-bold text-lg">Update Master Key</h4>
+                  <p className="text-sm text-gray-500">Authorized personnel only. Change your credentials to maintain operational security.</p>
+                </div>
+              </div>
+
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (passwordData.newPassword !== passwordData.confirmPassword) {
+                    return addToast({ type: 'error', message: 'New passwords do not match' });
+                  }
+                  passwordMutation.mutate({
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword
+                  });
+                }}
+                className="space-y-6"
+              >
+                <div className="space-y-4">
+                  <Input
+                    label="Current Password"
+                    type={showUpdatePasswords ? "text" : "password"}
+                    icon={FaLock}
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                    placeholder="••••••••"
+                    required
+                  />
+
+                  <Input
+                    label="New Password"
+                    type={showUpdatePasswords ? "text" : "password"}
+                    icon={FaLock}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+
+                  <div className="relative group">
+                    <Input
+                      label="Confirm New Password"
+                      type={showUpdatePasswords ? "text" : "password"}
+                      icon={FaLock}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowUpdatePasswords(!showUpdatePasswords)}
+                      className="absolute right-3 bottom-2 text-gray-500 hover:text-primary-500 transition-colors py-1"
+                      title={showUpdatePasswords ? "Hide Passwords" : "Show Passwords"}
+                    >
+                      {showUpdatePasswords ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    type="submit"
+                    loading={passwordMutation.isLoading}
+                    disabled={!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                    className="px-10"
+                  >
+                    Update Password
+                  </Button>
+                </div>
+              </form>
             </div>
 
             <div className="bg-dark-900 border border-dark-800 rounded-md overflow-hidden">

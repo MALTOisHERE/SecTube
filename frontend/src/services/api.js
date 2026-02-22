@@ -35,6 +35,7 @@ export const authAPI = {
       : {};
     return api.put('/auth/profile', data, { headers });
   },
+  updatePassword: (data) => api.put('/auth/updatepassword', data),
   upgradeToStreamer: (data) => api.post('/auth/upgrade-to-streamer', data),
   downgradeToViewer: () => api.post('/auth/downgrade-to-viewer'),
   forgotPassword: (data) => api.post('/auth/forgotpassword', data),

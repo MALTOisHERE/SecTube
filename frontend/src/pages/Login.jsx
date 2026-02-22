@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
-import { FaEnvelope, FaLock, FaShieldAlt, FaTerminal, FaBug, FaDatabase, FaCode, FaNetworkWired, FaGithub, FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaShieldAlt, FaTerminal, FaBug, FaDatabase, FaCode, FaNetworkWired, FaGithub, FaGoogle, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -170,24 +170,23 @@ const Login = () => {
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-300">Email Address</label>
-                  <div className="relative">
-                    <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div>
+                          <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-2 text-gray-300">Email or Username</label>
+                              <div className="relative">
+                                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+                                <input
+                                  type="text"
+                                  name="email"
+                                  value={formData.email}
+                                  onChange={handleChange}
+                                  required
+                                  className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
+                                  placeholder="your@email.com or username"
+                                />
+                              </div>
+                            </div>
+                              <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-gray-300">Password</label>
                     <Link to="/forgot-password" size={14} className="text-xs text-primary-500 hover:text-primary-400 transition font-medium">
