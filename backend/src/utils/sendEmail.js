@@ -6,53 +6,64 @@ const sendEmail = async (options) => {
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
-    const errorMsg = `Email Configuration Error: Missing ${missing.join(', ')}`;
-    console.error(errorMsg);
-    throw new Error(errorMsg);
+    console.error(`Email Config Missing: ${missing.join(', ')}`);
+    return logFallback(options);
   }
-
-  const isSecure = process.env.SMTP_PORT === '465';
 
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT),
-    secure: isSecure, 
+    secure: process.env.SMTP_PORT === '465', 
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD,
     },
-    // TLS settings for better compatibility with cloud providers
     tls: {
-      rejectUnauthorized: false, // Helps with self-signed cert issues on some proxies
-      ciphers: 'SSLv3'
+      rejectUnauthorized: false
     },
-    // Add timeouts to prevent hanging on Render
-    connectionTimeout: 10000, 
-    greetingTimeout: 5000,
-    socketTimeout: 15000,
+    connectionTimeout: 8000, // 8s timeout
   });
 
-  const message = {
-    from: `${process.env.FROM_NAME || 'SecTube'} <${process.env.FROM_EMAIL}>`,
-    to: options.email,
-    subject: options.subject,
-    text: options.message,
-    html: options.html
-  };
-
   try {
-    const info = await transporter.sendMail(message);
-    console.log(`Email sent successfully to ${options.email}. MessageId: ${info.messageId}`);
-    return info;
+    await transporter.sendMail({
+      from: `${process.env.FROM_NAME || 'SecTube'} <${process.env.FROM_EMAIL}>`,
+      to: options.email,
+      subject: options.subject,
+      text: options.message,
+      html: options.html
+    });
+    console.log(`Email delivered to ${options.email}`);
   } catch (error) {
-    // Log the full technical error for Render logs
-    console.error('CRITICAL: Nodemailer Failed.');
-    console.error('Error Code:', error.code);
-    console.error('Error Command:', error.command);
-    console.error('Full Message:', error.message);
+    console.error('--- SMTP DELIVERY FAILED ---');
+    console.error('Reason:', error.message);
+    console.error('ACTION: Checking fallback logs below...');
+    logFallback(options);
     
-    throw new Error(`Email delivery failed (${error.code || 'UNKNOWN'}).`);
+    // We throw error only if we want the frontend to show a failure
+    // but since we logged the link, we can actually return success to let the user proceed
+    // if they have access to server logs.
+    throw new Error(`Email delivery failed (${error.code}). Link logged to server console.`);
   }
+};
+
+/**
+ * Fallback to logging email content to console so developer can retrieve links
+ */
+const logFallback = (options) => {
+  console.log('================================================');
+  console.log('📧 OFFLINE EMAIL LOG (Fallback)');
+  console.log(`TO: ${options.email}`);
+  console.log(`SUBJECT: ${options.subject}`);
+  console.log('CONTENT:');
+  
+  // Extract URL from HTML if possible
+  const urlMatch = options.html?.match(/href="([^"]+)"/);
+  if (urlMatch) {
+    console.log(`🔗 KEY URL: ${urlMatch[1]}`);
+  } else {
+    console.log(options.message || 'No text content');
+  }
+  console.log('================================================');
 };
 
 export default sendEmail;
