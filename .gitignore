@@ -44,3 +44,4 @@ temp/
 .env*.local
 
 nul
+.gemini

@@ -10,6 +10,8 @@ import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
 import passport from './config/passport.js';
 import { setupSwagger } from './config/swagger.js';
+import { mcpServer } from './config/mcp.js';
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -54,6 +56,40 @@ app.use(helmet({
 })); // Security headers with static file support
 app.use(morgan('dev')); // Logging
 app.use(compression()); // Compress responses
+
+// MCP SSE Endpoint
+let mcpTransport;
+app.get("/api/mcp", async (req, res) => {
+  console.log("🤖 AI Agent initiating MCP SSE connection...");
+  try {
+    mcpTransport = new SSEServerTransport("/api/mcp/messages", res);
+    await mcpServer.connect(mcpTransport);
+    
+    // Handle close
+    req.on('close', () => {
+      console.log("🔌 MCP connection closed");
+      mcpTransport = null;
+    });
+  } catch (error) {
+    console.error("❌ MCP Connection Error:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.post("/api/mcp/messages", async (req, res) => {
+  if (!mcpTransport) {
+    console.warn("⚠️ POST to /api/mcp/messages but no active transport");
+    return res.status(400).send("No active MCP transport");
+  }
+  
+  try {
+    await mcpTransport.handlePostMessage(req, res);
+  } catch (error) {
+    console.error("❌ MCP Message Error:", error);
+    res.status(500).send(error.message);
+  }
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
