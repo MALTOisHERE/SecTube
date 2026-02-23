@@ -34,7 +34,7 @@ const getToolName = (path, method) => {
   return `${method}_${cleanPath}`;
 };
 
-const tools = [];
+export const tools = [];
 const API_BASE_URL = process.env.API_URL || "http://localhost:5000";
 
 // Populate tools from Swagger specs
