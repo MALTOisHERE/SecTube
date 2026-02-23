@@ -48,42 +48,485 @@ const loginValidation = [
   body('password').notEmpty()
 ];
 
-// Public routes
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Authentication management
+ */
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Bad request
+ */
 router.post('/register', registerValidation, register);
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post('/login', loginValidation, login);
+
+/**
+ * @swagger
+ * /api/auth/forgotpassword:
+ *   post:
+ *     summary: Request password reset email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email sent
+ */
 router.post('/forgotpassword', forgotPasswordLimiter, forgotPassword);
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current logged in user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ */
+router.get('/me', protect, getMe);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Update user profile
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *               bio:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ */
+router.put('/profile', protect, avatarUploadMiddleware, updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/resetpassword/{resettoken}:
+ *   put:
+ *     summary: Reset user password
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: resettoken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Password reset token from email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 description: New password (minimum 6 characters)
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Invalid or expired token
+ */
 router.put('/resetpassword/:resettoken', resetPassword);
+
+/**
+ * @swagger
+ * /api/auth/verify-login-2fa:
+ *   post:
+ *     summary: Verify 2FA token during login
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tempToken
+ *               - token
+ *             properties:
+ *               tempToken:
+ *                 type: string
+ *                 description: Temporary token from initial login
+ *               token:
+ *                 type: string
+ *                 description: 6-digit 2FA code from authenticator app
+ *     responses:
+ *       200:
+ *         description: 2FA verification successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 token:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Invalid 2FA code
+ */
 router.post('/verify-login-2fa', verifyLogin2FA);
+
+/**
+ * @swagger
+ * /api/auth/verify-email/{token}:
+ *   get:
+ *     summary: Verify user email address
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Email verification token
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid or expired token
+ */
 router.get('/verify-email/:token', verifyEmail);
 
-// GitHub SSO routes
+/**
+ * @swagger
+ * /api/auth/github:
+ *   get:
+ *     summary: Initiate GitHub OAuth login
+ *     tags: [Auth]
+ *     description: Redirects to GitHub for OAuth authentication
+ *     responses:
+ *       302:
+ *         description: Redirect to GitHub OAuth
+ */
 router.get('/github', (req, res, next) => {
   if (!isGithubEnabled) {
     return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=GitHub SSO is not configured on the server.`);
   }
   passport.authenticate('github', { scope: ['user:email'], session: false })(req, res, next);
 });
+
+/**
+ * @swagger
+ * /api/auth/github/callback:
+ *   get:
+ *     summary: GitHub OAuth callback
+ *     tags: [Auth]
+ *     description: Callback endpoint for GitHub OAuth
+ *     responses:
+ *       302:
+ *         description: Redirect to frontend with token
+ */
 router.get('/github/callback', passport.authenticate('github', { session: false, failureRedirect: '/login' }), githubCallback);
 
-// Google SSO routes
+/**
+ * @swagger
+ * /api/auth/google:
+ *   get:
+ *     summary: Initiate Google OAuth login
+ *     tags: [Auth]
+ *     description: Redirects to Google for OAuth authentication
+ *     responses:
+ *       302:
+ *         description: Redirect to Google OAuth
+ */
 router.get('/google', (req, res, next) => {
   if (!isGoogleEnabled) {
     return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=Google SSO is not configured on the server.`);
   }
   passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next);
 });
+
+/**
+ * @swagger
+ * /api/auth/google/callback:
+ *   get:
+ *     summary: Google OAuth callback
+ *     tags: [Auth]
+ *     description: Callback endpoint for Google OAuth
+ *     responses:
+ *       302:
+ *         description: Redirect to frontend with token
+ */
 router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), githubCallback);
 
 // Protected routes
-router.get('/me', protect, getMe);
-router.put('/profile', protect, avatarUploadMiddleware, updateProfile);
+/**
+ * @swagger
+ * /api/auth/updatepassword:
+ *   put:
+ *     summary: Update user password
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Current password
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *                 description: New password (minimum 6 characters)
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       401:
+ *         description: Current password is incorrect
+ */
 router.put('/updatepassword', protect, updatePassword);
+
+/**
+ * @swagger
+ * /api/auth/upgrade-to-streamer:
+ *   post:
+ *     summary: Upgrade user account to streamer
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - channelName
+ *             properties:
+ *               channelName:
+ *                 type: string
+ *                 description: Unique channel name for the streamer
+ *               specialties:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [Web Application Security, Network Security, Bug Bounty, Penetration Testing, Malware Analysis, Reverse Engineering, Mobile Security, Cloud Security, CTF Challenges, OSINT, Cryptography, IoT Security, Digital Forensics, Incident Response, Threat Hunting, DevSecOps, Application Security, SCADA / ICS Security, Wireless Security, Social Engineering, Red Teaming, Blue Teaming, API Security, Binary Exploitation, Kernel Hacking, Other]
+ *                 description: Areas of cybersecurity expertise
+ *               socialLinks:
+ *                 type: object
+ *                 properties:
+ *                   twitter:
+ *                     type: string
+ *                   github:
+ *                     type: string
+ *                   linkedin:
+ *                     type: string
+ *                   website:
+ *                     type: string
+ *                   hackerone:
+ *                     type: string
+ *                   bugcrowd:
+ *                     type: string
+ *                   discord:
+ *                     type: string
+ *                   youtube:
+ *                     type: string
+ *                   tryhackme:
+ *                     type: string
+ *     responses:
+ *       200:
+ *         description: Successfully upgraded to streamer
+ *       400:
+ *         description: Channel name already exists or user is already a streamer
+ */
 router.post('/upgrade-to-streamer', protect, upgradeToStreamer);
+
+/**
+ * @swagger
+ * /api/auth/downgrade-to-viewer:
+ *   post:
+ *     summary: Downgrade streamer account to viewer
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully downgraded to viewer
+ *       400:
+ *         description: User is not a streamer
+ */
 router.post('/downgrade-to-viewer', protect, downgradeToViewer);
 
 // 2FA Management
+/**
+ * @swagger
+ * /api/auth/setup-2fa:
+ *   post:
+ *     summary: Setup Two-Factor Authentication
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Generates a 2FA secret and QR code for authenticator apps (Google Authenticator, Authy, etc.)
+ *     responses:
+ *       200:
+ *         description: 2FA secret and QR code generated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 secret:
+ *                   type: string
+ *                   description: Base32 encoded secret for manual entry
+ *                 qrCode:
+ *                   type: string
+ *                   description: Data URL of QR code image
+ *       400:
+ *         description: 2FA already enabled
+ */
 router.post('/setup-2fa', protect, setup2FA);
+
+/**
+ * @swagger
+ * /api/auth/verify-2fa:
+ *   post:
+ *     summary: Verify and enable 2FA
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Verify the 2FA token to complete setup and enable 2FA for the account
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: 6-digit code from authenticator app
+ *     responses:
+ *       200:
+ *         description: 2FA enabled successfully
+ *       400:
+ *         description: Invalid token or 2FA not setup
+ */
 router.post('/verify-2fa', protect, verify2FA);
+
+/**
+ * @swagger
+ * /api/auth/disable-2fa:
+ *   post:
+ *     summary: Disable Two-Factor Authentication
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 description: User password for verification
+ *     responses:
+ *       200:
+ *         description: 2FA disabled successfully
+ *       400:
+ *         description: 2FA not enabled or incorrect password
+ *       401:
+ *         description: Invalid password
+ */
 router.post('/disable-2fa', protect, disable2FA);
 
 export default router;

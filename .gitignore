@@ -42,3 +42,5 @@ coverage/
 temp/
 .vercel
 .env*.local
+
+nul

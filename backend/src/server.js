@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
 import passport from './config/passport.js';
+import { setupSwagger } from './config/swagger.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -55,6 +56,20 @@ app.use(morgan('dev')); // Logging
 app.use(compression()); // Compress responses
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Setup Swagger (development only)
+if (process.env.NODE_ENV !== 'production') {
+  setupSwagger(app);
+} else {
+  // Provide helpful message in production
+  app.get('/api-docs', (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: 'API documentation is only available in development mode',
+      hint: 'Visit the health endpoint at /api/health to check API status'
+    });
+  });
+}
 
 // API Routes
 app.use('/api/auth', authRoutes);

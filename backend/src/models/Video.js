@@ -1,5 +1,48 @@
 import mongoose from 'mongoose';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Video:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *         - category
+ *         - thumbnail
+ *         - duration
+ *       properties:
+ *         title:
+ *           type: string
+ *           description: Video title
+ *         description:
+ *           type: string
+ *           description: Video description
+ *         uploader:
+ *           type: string
+ *           description: User ID of the uploader
+ *         category:
+ *           type: string
+ *           description: Cybersecurity category
+ *         difficulty:
+ *           type: string
+ *           enum: [Beginner, Intermediate, Advanced, Expert]
+ *         visibility:
+ *           type: string
+ *           enum: [public, unlisted, private]
+ *         views:
+ *           type: number
+ *         processingStatus:
+ *           type: string
+ *           enum: [uploading, processing, ready, failed]
+ *         thumbnail:
+ *           type: string
+ *           description: URL to video thumbnail
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ */
 const videoSchema = new mongoose.Schema({
   title: {
     type: String,

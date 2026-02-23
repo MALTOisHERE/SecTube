@@ -3,6 +3,47 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - username
+ *         - email
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *           description: Unique username (3-30 characters)
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Unique email address
+ *         displayName:
+ *           type: string
+ *           description: User's display name
+ *         avatar:
+ *           type: string
+ *           description: URL to user's avatar
+ *         bio:
+ *           type: string
+ *           description: User's biography
+ *         role:
+ *           type: string
+ *           enum: [viewer, streamer, admin]
+ *           default: viewer
+ *         isStreamer:
+ *           type: boolean
+ *           default: false
+ *         channelName:
+ *           type: string
+ *           description: Unique channel name for streamers
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ */
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
