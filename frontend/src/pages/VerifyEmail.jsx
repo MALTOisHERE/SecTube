@@ -59,7 +59,7 @@ const VerifyEmail = () => {
               <FaCheckCircle className="text-green-500" size={64} />
             </div>
             <h1 className="text-2xl font-bold text-white">Verification Successful!</h1>
-            <p className="text-gray-400">Your account is now active. Redirecting you to the app...</p>
+            <p className="text-gray-400">Your account is now active. Redirecting you to sign in...</p>
           </div>
         )}
 
