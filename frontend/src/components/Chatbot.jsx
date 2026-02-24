@@ -9,6 +9,7 @@ import { getAvatarUrl } from '../config/constants';
 import ConfirmDialog from './ConfirmDialog';
 
 const STORAGE_KEY = 'sectube_chat_history';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +61,7 @@ const Chatbot = () => {
 
     try {
       const response = await axios.post(
-        '/api/chat',
+        `${API_URL}/chat`,
         { messages: [...messages, userMessage] },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
