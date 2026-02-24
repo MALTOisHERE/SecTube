@@ -2,6 +2,7 @@
   "name": "cyber-stream-backend",
   "version": "1.0.0",
   "description": "Backend API for Cyber Stream Platform",
+  "license": "UNLICENSED",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

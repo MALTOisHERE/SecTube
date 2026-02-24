@@ -521,7 +521,7 @@ This platform is designed for **educational purposes** and **authorized security
 
 ## License
 
-This project is licensed under the MIT License.
+All Rights Reserved. No part of this project may be copied or used without prior written permission.
 
 ## Support
 

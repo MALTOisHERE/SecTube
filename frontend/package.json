@@ -1,6 +1,7 @@
 {
   "name": "cyber-stream-frontend",
   "version": "1.0.0",
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "vite",

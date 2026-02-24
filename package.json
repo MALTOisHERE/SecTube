@@ -2,6 +2,7 @@
   "name": "cyber-stream-platform",
   "version": "1.0.0",
   "description": "A streaming platform for cybersecurity enthusiasts, bug hunters, and ethical hackers",
+  "license": "UNLICENSED",
   "private": true,
   "workspaces": [
     "backend",
