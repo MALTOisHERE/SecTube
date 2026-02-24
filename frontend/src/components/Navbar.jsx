@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo } from 'react-icons/fa';
+import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo, FaMagic } from 'react-icons/fa';
 import { useState, useRef, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
 import useSidebarStore from '../store/sidebarStore';
+import useChatbotStore from '../store/chatbotStore';
 import ConfirmDialog from './ConfirmDialog';
 import Z_INDEX from '../config/zIndex';
 import { getAvatarUrl } from '../config/constants';
@@ -12,6 +13,7 @@ import { useDropdownPosition, getDropdownClasses } from '../hooks/useDropdownPos
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
   const { toggleSidebar } = useSidebarStore();
+  const { toggleChatbot } = useChatbotStore();
   const navigate = useNavigate();
   const { addToast } = useToastStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,6 +96,27 @@ const Navbar = () => {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
+          {/* Ask AI Button (Desktop) */}
+          <button
+            onClick={toggleChatbot}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary-600/10 hover:bg-primary-600/20 text-primary-500 hover:text-primary-400 border border-primary-500/20 rounded-md text-sm font-medium transition-all duration-300"
+          >
+            <span>Ask AI</span>
+            <FaMagic size={13} />
+          </button>
+
+          {/* Ask AI Button (Mobile) */}
+          <button
+            onClick={toggleChatbot}
+            className="flex sm:hidden items-center justify-center p-2 text-gray-500 hover:text-primary-500 transition-colors"
+            title="Ask AI"
+          >
+            <FaMagic size={18} />
+          </button>
+
+          {/* Separator */}
+          <div className="h-6 w-px bg-dark-700 mx-1"></div>
+
           {isAuthenticated ? (
             <div className="relative" ref={userMenuRef}>
               <button

@@ -19,6 +19,7 @@ export const Z_INDEX = {
   // Navigation elements
   SIDEBAR_OVERLAY: 1000,
   SIDEBAR: 1001,
+  SIDEBAR_RIGHT: 1002,
   NAVBAR: 1100,
 
   // Dropdowns and popovers
