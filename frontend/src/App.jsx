@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
+import Chatbot from './components/Chatbot';
 import Home from './pages/Home';
 import Video from './pages/Video';
 import Channel from './pages/Channel';
@@ -84,6 +85,7 @@ function App() {
       {!isAuthPage && <Navbar />}
       {!isAuthPage && <Sidebar />}
       <Toast />
+      <Chatbot />
       <main className={isAuthPage ? 'w-full min-h-screen' : ''}>
         <Routes>
           <Route path="/" element={<Home />} />

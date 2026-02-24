@@ -153,7 +153,7 @@ router.get('/me', protect, getMe);
  * @swagger
  * /api/auth/profile:
  *   put:
- *     summary: Update user profile
+ *     summary: Update user profile (username cannot be changed)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -165,16 +165,65 @@ router.get('/me', protect, getMe);
  *             properties:
  *               displayName:
  *                 type: string
+ *                 description: User's display name
  *               bio:
  *                 type: string
+ *                 description: User biography
+ *               socialLinks:
+ *                 type: string
+ *                 description: JSON string of social media links (e.g., {"twitter":"url","github":"url"})
+ *               specialties:
+ *                 type: string
+ *                 description: JSON array of specialties (e.g., ["CTF","Web Security"])
  *               avatar:
  *                 type: string
  *                 format: binary
+ *                 description: Profile avatar image
  *     responses:
  *       200:
- *         description: Profile updated
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
  */
+// Profile update with avatar upload (multipart/form-data)
 router.put('/profile', protect, avatarUploadMiddleware, updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   patch:
+ *     summary: Update user profile text fields (bio, displayName, etc.) - JSON only
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *                 description: User's display name
+ *               bio:
+ *                 type: string
+ *                 description: User biography or channel description
+ *               socialLinks:
+ *                 type: object
+ *                 description: Social media links (github, twitter, linkedin, website, hackerone)
+ *               specialties:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of specialties/focus areas
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.patch('/profile', protect, updateProfile);
 
 /**
  * @swagger

@@ -35,13 +35,13 @@ const getToolName = (path, method) => {
 };
 
 export const tools = [];
-const API_BASE_URL = process.env.API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.BACKEND_URL || "http://localhost:5000";
 
 // Populate tools from Swagger specs
 if (specs && specs.paths) {
   Object.entries(specs.paths).forEach(([path, methods]) => {
     Object.entries(methods).forEach(([method, detail]) => {
-      if (!["get", "post", "put", "delete"].includes(method)) return;
+      if (!["get", "post", "put", "delete", "patch"].includes(method)) return;
 
       tools.push({
         name: getToolName(path, method),
