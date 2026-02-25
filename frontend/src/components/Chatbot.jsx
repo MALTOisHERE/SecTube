@@ -166,7 +166,7 @@ const Chatbot = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowClearConfirm(true)}
-              className="p-2 hover:bg-dark-800 rounded-md transition-colors text-red-500/70 hover:text-red-500"
+              className="p-2 hover:bg-dark-800 rounded-md transition-colors text-gray-500 hover:text-red-500"
               title="Clear chat history"
             >
               <FaTrash size={14} />

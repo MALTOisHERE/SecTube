@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo, FaMagic } from 'react-icons/fa';
+import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo } from 'react-icons/fa';
+import { BsStars } from 'react-icons/bs';
 import { useState, useRef, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
 import useToastStore from '../store/toastStore';
@@ -76,46 +77,45 @@ const Navbar = () => {
         </div>
 
         {/* Center: Search */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
-          <div className="flex">
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-dark-900 border border-dark-700 rounded-l-md px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-            />
-            <button
-              type="submit"
-              className="bg-dark-900 border border-l-0 border-dark-700 rounded-r-md px-4 py-1.5 hover:bg-dark-800 transition"
-            >
-              <FaSearch className="text-gray-500" size={14} />
-            </button>
-          </div>
-        </form>
+        <div className="flex-1 max-w-2xl flex items-center gap-2">
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="flex">
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-dark-900 border border-dark-700 rounded-l-md px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              />
+              <button
+                type="submit"
+                className="bg-dark-900 border border-l-0 border-dark-700 rounded-r-md px-4 py-1.5 hover:bg-dark-800 transition"
+              >
+                <FaSearch className="text-gray-500" size={14} />
+              </button>
+            </div>
+          </form>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
           {/* Ask AI Button (Desktop) */}
           <button
             onClick={toggleChatbot}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary-600/10 hover:bg-primary-600/20 text-primary-500 hover:text-primary-400 border border-primary-500/20 rounded-md text-sm font-medium transition-all duration-300"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-primary-600/10 hover:bg-primary-600/20 text-primary-500 hover:text-primary-400 border border-primary-500/20 rounded-md text-sm font-medium transition-all duration-300 h-[34px]"
           >
             <span>Ask AI</span>
-            <FaMagic size={13} />
+            <BsStars size={16} />
           </button>
+        </div>
 
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
           {/* Ask AI Button (Mobile) */}
           <button
             onClick={toggleChatbot}
-            className="flex sm:hidden items-center justify-center p-2 text-gray-500 hover:text-primary-500 transition-colors"
+            className="flex sm:hidden items-center justify-center p-1.5 text-gray-500 hover:text-primary-500 transition-colors"
             title="Ask AI"
           >
-            <FaMagic size={18} />
+            <BsStars size={20} />
           </button>
-
-          {/* Separator */}
-          <div className="h-6 w-px bg-dark-700 mx-1"></div>
 
           {isAuthenticated ? (
             <div className="relative" ref={userMenuRef}>
@@ -184,7 +184,7 @@ const Navbar = () => {
             <>
               <Link
                 to="/login"
-                className="px-3 py-1.5 text-sm text-gray-300 hover:text-white font-medium border border-transparent rounded-md hover:bg-dark-800 transition"
+                className="px-3 py-1.5 text-sm text-gray-300 hover:text-white font-medium border border-dark-700/50 rounded-md hover:bg-dark-800 transition"
               >
                 Sign in
               </Link>
