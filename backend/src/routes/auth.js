@@ -36,6 +36,18 @@ const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Login limiter to prevent brute force attacks
+const loginLimiter = rateLimit({
+  windowMs: (parseInt(process.env.LOGIN_WINDOW_MINS) || 15) * 60 * 1000,
+  max: parseInt(process.env.LOGIN_LIMIT) || 5,
+  message: {
+    success: false,
+    message: 'Too many login attempts. Please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Validation rules
 const registerValidation = [
   body('username').trim().isLength({ min: 3, max: 30 }).matches(/^[a-zA-Z0-9._-]+$/),
@@ -112,7 +124,7 @@ router.post('/register', registerValidation, register);
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', loginValidation, login);
+router.post('/login', loginLimiter, loginValidation, login);
 
 /**
  * @swagger
