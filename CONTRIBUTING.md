@@ -1,6 +1,6 @@
-# Contributing to CyberStream
+# Contributing to SecTube
 
-Thank you for considering contributing to CyberStream! This document provides guidelines and instructions for contributing.
+Thank you for considering contributing to SecTube! This document provides guidelines and instructions for contributing to the platform.
 
 ## Code of Conduct
 
@@ -33,8 +33,9 @@ Thank you for considering contributing to CyberStream! This document provides gu
 ### Submitting Code
 
 1. **Fork the repository**
+   You can fork the repository using the GitHub UI or via the GitHub CLI:
    ```bash
-   git fork https://github.com/yourusername/cyberstream
+   gh repo fork MALTOisHERE/SecTube
    ```
 
 2. **Create a feature branch**
@@ -49,15 +50,10 @@ Thank you for considering contributing to CyberStream! This document provides gu
    - Update documentation
 
 4. **Test your changes**
-   ```bash
-   # Backend tests
-   cd backend
-   npm test
-
-   # Frontend tests
-   cd frontend
-   npm test
-   ```
+   Currently, we are in the process of implementing a full test suite. Please ensure your changes:
+   - Don't break the build (`npm run build`)
+   - Are lint-free (`npm run lint` in the frontend)
+   - Function as expected in the dev environment
 
 5. **Commit your changes**
    ```bash
@@ -79,15 +75,14 @@ Thank you for considering contributing to CyberStream! This document provides gu
 ### Code Style
 
 #### Backend (Node.js)
-- Use ES6+ features
+- Use ES6+ features (ES Modules)
 - Follow async/await pattern
 - Use meaningful variable names
-- Add JSDoc comments for functions
-- Handle errors properly
+- Handle errors properly using the centralized error handler
 
 ```javascript
 // Good
-async function getUserVideos(userId, options = {}) {
+export const getUserVideos = async (userId, options = {}) => {
   try {
     const videos = await Video.find({ uploader: userId })
       .limit(options.limit || 10)
@@ -97,19 +92,13 @@ async function getUserVideos(userId, options = {}) {
     throw new Error(`Failed to fetch videos: ${error.message}`);
   }
 }
-
-// Avoid
-function getVids(id) {
-  return Video.find({uploader: id}).then(v => v).catch(e => console.log(e));
-}
 ```
 
 #### Frontend (React)
 - Use functional components with hooks
-- Follow React best practices
-- Use meaningful component names
-- Keep components focused and reusable
-- Use proper prop types
+- Follow TailwindCSS for all styling
+- Use Zustand for state management
+- Use React Query (TanStack Query) for data fetching
 
 ```jsx
 // Good
@@ -121,16 +110,11 @@ const VideoCard = ({ video }) => {
   };
 
   return (
-    <div onClick={handleClick}>
-      <h3>{video.title}</h3>
+    <div onClick={handleClick} className="bg-dark-900 rounded-lg overflow-hidden border border-dark-800 hover:border-primary-500 transition-all cursor-pointer">
+      <h3 className="text-white font-medium p-3">{video.title}</h3>
     </div>
   );
 };
-
-// Avoid
-const Card = (props) => {
-  return <div onClick={() => window.location = '/video/' + props.v.id}>{props.v.t}</div>
-}
 ```
 
 ### Commit Messages
@@ -147,27 +131,6 @@ test: add unit tests for auth controller
 chore: update dependencies
 ```
 
-### Testing
-
-- Write tests for new features
-- Ensure existing tests pass
-- Aim for good code coverage
-
-```javascript
-// Example test
-describe('Video Upload', () => {
-  it('should upload video successfully', async () => {
-    const response = await request(app)
-      .post('/api/videos/upload')
-      .attach('video', 'test/fixtures/sample.mp4')
-      .field('title', 'Test Video')
-      .expect(201);
-
-    expect(response.body.success).toBe(true);
-  });
-});
-```
-
 ## Project Structure
 
 When adding new files, follow this structure:
@@ -179,7 +142,8 @@ backend/src/
 ├── models/          # Database schemas
 ├── routes/          # API routes
 ├── middleware/      # Custom middleware
-├── utils/           # Helper functions
+├── services/       # Business logic (AI, email, etc.)
+├── utils/           # Helper functions (video processor, etc.)
 └── config/          # Configuration files
 ```
 
@@ -188,92 +152,67 @@ backend/src/
 frontend/src/
 ├── components/      # Reusable components
 ├── pages/          # Page components
-├── services/       # API clients
-├── store/          # State management
+├── services/       # API clients (axios instance)
+├── store/          # State management (Zustand)
 ├── hooks/          # Custom hooks
-└── utils/          # Helper functions
+└── config/          # Theme, constants, z-index
 ```
 
 ## Areas for Contribution
 
 ### High Priority
-- [ ] Live streaming functionality
-- [ ] Real-time chat
-- [ ] Improved video player with quality selector
+- [ ] Live streaming functionality (RTMP/WebRTC)
+- [ ] Real-time user-to-user chat (Socket.io)
 - [ ] Mobile responsive improvements
-- [ ] Performance optimizations
+- [ ] Performance optimizations & Caching (Redis)
 
 ### Medium Priority
 - [ ] User notifications system
-- [ ] Playlist feature
+- [ ] Playlist and collections feature
 - [ ] Advanced search filters
-- [ ] Video recommendations
-- [ ] Analytics dashboard
+- [ ] Analytics dashboard for streamers
 
-### Documentation
-- [ ] API documentation
-- [ ] Component documentation
-- [ ] Tutorial videos
-- [ ] Deployment guides
-
-### Testing
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] E2E tests
-- [ ] Performance tests
+### Documentation & Quality
+- [ ] Comprehensive Test Suite (Jest/Cypress)
+- [ ] API Documentation (Swagger)
+- [ ] Deployment guides for different platforms
 
 ## Security Contributions
 
 If you find a security vulnerability:
 
 1. **DO NOT** open a public issue
-2. Email security concerns to: security@cyberstream.example
+2. Report security concerns to the maintainer via GitHub Private Vulnerability Reporting or contact the development team directly.
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
    - Suggested fix (if any)
 
-We will:
-- Acknowledge within 48 hours
-- Investigate and develop a fix
-- Credit you in the security advisory (if desired)
-
 ## Review Process
 
 1. **Automated Checks**
-   - Code formatting
    - Linting
-   - Tests
    - Build process
 
 2. **Code Review**
    - At least one maintainer review required
    - Address feedback
-   - Ensure CI passes
+   - Ensure UI matches the "Cyber UI" aesthetic
 
 3. **Merge**
    - Squash commits
-   - Update changelog
-   - Deploy to staging (if applicable)
+   - Update changelog (if applicable)
 
 ## Getting Help
 
-- **Discord**: Join our community server
 - **Issues**: Tag with "question" or "help wanted"
 - **Discussions**: Use GitHub Discussions for general questions
 
-## Recognition
-
-Contributors will be:
-- Listed in CONTRIBUTORS.md
-- Mentioned in release notes
-- Featured on the website (for significant contributions)
-
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the same terms as the project's [LICENSE](./LICENSE) (All Rights Reserved).
 
 ---
 
-Thank you for contributing to CyberStream! 🎉
+Thank you for contributing to SecTube! 🎉

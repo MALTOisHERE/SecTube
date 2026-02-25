@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CyberStream (SecTube) is a video streaming platform specifically designed for cybersecurity content, including bug bounties, ethical hacking tutorials, CTF writeups, and security research. The platform enables streamers to upload educational cybersecurity videos with automatic transcoding, while viewers can browse, search, and learn from categorized security content.
+SecTube is a video streaming platform specifically designed for cybersecurity content, including bug bounties, ethical hacking tutorials, CTF writeups, and security research. The platform enables streamers to upload educational cybersecurity videos with automatic transcoding, while viewers can browse, search, and learn from categorized security content.
 
 ## Tech Stack
 
@@ -206,7 +206,7 @@ If video processing fails with FFmpeg errors:
 
 ### MongoDB Connection
 - Ensure MongoDB is running before starting backend
-- Default connection: `mongodb://localhost:27017/cyber_stream_platform`
+- Default connection: `mongodb://localhost:27017/sectube`
 - Check connection status in backend startup logs
 
 ### CORS Issues

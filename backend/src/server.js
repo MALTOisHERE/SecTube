@@ -119,7 +119,7 @@ app.use('/api/chat', chatRoutes);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Cyber Stream Platform API is running',
+    message: 'SecTube API is running',
     timestamp: new Date().toISOString()
   });
 });

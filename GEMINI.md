@@ -1,4 +1,4 @@
-# SecTube (CyberStream) Project Context
+# SecTube Project Context
 
 SecTube is a modern, cybersecurity-focused video streaming platform designed for sharing educational content such as bug bounty tutorials, ethical hacking research, and CTF writeups. It employs a MERN-like stack with specialized video processing capabilities.
 

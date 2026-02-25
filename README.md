@@ -132,7 +132,7 @@ PORT=5000
 NODE_ENV=development
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/cyber_stream_platform
+MONGODB_URI=mongodb://localhost:27017/sectube
 
 # JWT Secret (Generate a strong random string)
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production

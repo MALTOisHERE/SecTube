@@ -1,7 +1,7 @@
 {
-  "name": "cyber-stream-backend",
+  "name": "sectube-backend",
   "version": "1.0.0",
-  "description": "Backend API for Cyber Stream Platform",
+  "description": "Backend API for SecTube",
   "license": "UNLICENSED",
   "main": "src/server.js",
   "type": "module",
