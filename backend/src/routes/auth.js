@@ -44,8 +44,8 @@ const registerValidation = [
 ];
 
 const loginValidation = [
-  body('email').isEmail(),
-  body('password').notEmpty()
+  body('identifier').notEmpty().withMessage('Email or username is required'),
+  body('password').notEmpty().withMessage('Password is required')
 ];
 
 /**
@@ -99,10 +99,10 @@ router.post('/register', registerValidation, register);
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - identifier
  *               - password
  *             properties:
- *               email:
+ *               identifier:
  *                 type: string
  *               password:
  *                 type: string

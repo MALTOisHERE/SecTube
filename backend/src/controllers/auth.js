@@ -123,11 +123,11 @@ export const login = async (req, res, next) => {
       });
     }
 
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
     // Find user by email or username and include password
     const user = await User.findOne({
-      $or: [{ email }, { username: email }]
+      $or: [{ email: identifier }, { username: identifier }]
     }).select('+password');
 
     if (!user) {

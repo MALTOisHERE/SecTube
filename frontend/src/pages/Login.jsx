@@ -11,10 +11,10 @@ const Login = () => {
   const login = useAuthStore((state) => state.login);
   const { addToast } = useToastStore();
   const [formData, setFormData] = useState({
-    email: localStorage.getItem('remembered_email') || '',
+    identifier: localStorage.getItem('remembered_login') || '',
     password: '',
   });
-  const [rememberMe, setRememberMe] = useState(!!localStorage.getItem('remembered_email'));
+  const [rememberMe, setRememberMe] = useState(!!localStorage.getItem('remembered_login'));
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -73,9 +73,9 @@ const Login = () => {
 
       // Handle Remember Me
       if (rememberMe) {
-        localStorage.setItem('remembered_email', formData.email);
+        localStorage.setItem('remembered_login', formData.identifier);
       } else {
-        localStorage.removeItem('remembered_email');
+        localStorage.removeItem('remembered_login');
       }
 
       login(response.data.user, response.data.token);
@@ -103,9 +103,9 @@ const Login = () => {
 
       // Handle Remember Me (now that we are fully logged in)
       if (rememberMe) {
-        localStorage.setItem('remembered_email', formData.email);
+        localStorage.setItem('remembered_login', formData.identifier);
       } else {
-        localStorage.removeItem('remembered_email');
+        localStorage.removeItem('remembered_login');
       }
 
       login(response.data.user, response.data.token);
@@ -177,8 +177,8 @@ const Login = () => {
                                 <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
                                 <input
                                   type="text"
-                                  name="email"
-                                  value={formData.email}
+                                  name="identifier"
+                                  value={formData.identifier}
                                   onChange={handleChange}
                                   required
                                   className="w-full bg-dark-900 border border-dark-700 rounded-md pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition text-white placeholder-gray-500"
