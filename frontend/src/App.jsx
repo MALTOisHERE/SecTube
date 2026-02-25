@@ -72,7 +72,7 @@ function App() {
           bannerStatus === 'entering' || bannerStatus === 'leaving' ? 'animate-slideDown' : 'animate-slideUp'
         }`}>
           <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
-          Platform Status: Development Mode // Unauthorized usage restricted
+          Platform Status: Development Mode // Unauthorized usage restricted // Developed by <a href="https://github.com/MALTOisHERE" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-200 transition-colors">MALTO</a>
           <button 
             onClick={handleCloseBanner}
             className="absolute right-4 hover:text-gray-300 transition-colors"

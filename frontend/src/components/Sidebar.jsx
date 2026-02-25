@@ -44,7 +44,8 @@ const Sidebar = () => {
         style={{ zIndex: Z_INDEX.SIDEBAR }}
       >
       {isOpen && (
-        <div className="w-64">
+        <div className="w-64 flex flex-col min-h-full">
+        <div>
         {/* Main Navigation */}
         <div>
           {navItems.map((item, index) => (
@@ -95,6 +96,22 @@ const Sidebar = () => {
             </Link>
           </div>
         )}
+        </div>
+
+        {/* Footer info at bottom of sidebar */}
+        <div className="mt-auto px-4 py-6 border-t border-dark-800">
+          <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-bold text-gray-500 mb-4 uppercase tracking-wider">
+            <Link to="/terms" className="hover:text-primary-500 transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-primary-500 transition-colors">Privacy</Link>
+            <span className="cursor-default">Policy & Safety</span>
+          </div>
+          <p className="text-[10px] text-gray-600 font-medium">
+            © {new Date().getFullYear()} SecTube
+          </p>
+          <p className="text-[10px] text-gray-500 font-bold mt-1.5">
+            Developed by <a href="https://github.com/MALTOisHERE" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:text-primary-400 transition-colors">MALTO</a>
+          </p>
+        </div>
         </div>
       )}
       </aside>

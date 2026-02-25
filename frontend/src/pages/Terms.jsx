@@ -10,7 +10,7 @@ const Terms = () => {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-white">Terms of Use</h1>
-          <p className="text-gray-500 mt-1">Last Updated: October 2023</p>
+          <p className="text-gray-500 mt-1">Last Updated: February 2026</p>
         </div>
       </div>
 
