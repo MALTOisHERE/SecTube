@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { adminAPI } from '../services/api';
 import useToastStore from '../store/toastStore';
 import Card from '../components/Card';
-import { FaUsers, FaVideo, FaComments, FaEye, FaUserShield, FaBan, FaTrash, FaCheckCircle, FaSearch, FaFilter, FaInfoCircle, FaCopy } from 'react-icons/fa';
+import { FaUsers, FaVideo, FaComments, FaEye, FaUserShield, FaBan, FaTrash, FaCheckCircle, FaSearch, FaFilter, FaInfoCircle, FaCopy, FaExclamationTriangle } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { getThumbnailUrl, getAvatarUrl } from '../config/constants';
 import ConfirmDialog from '../components/ConfirmDialog';
