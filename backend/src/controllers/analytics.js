@@ -107,8 +107,6 @@ export const getVideoPerformance = async (req, res, next) => {
       {
         $match: {
           uploader: req.user._id,
-          visibility: 'public',
-          processingStatus: 'ready',
           ...dateFilter
         }
       },
