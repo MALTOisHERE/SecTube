@@ -19,6 +19,7 @@ import userRoutes from './routes/users.js';
 import videoRoutes from './routes/videos.js';
 import channelRoutes from './routes/channels.js';
 import chatRoutes from './routes/chat.js';
+import analyticsRoutes from './routes/analytics.js';
 
 // Load environment variables
 dotenv.config();
@@ -114,6 +115,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/channels', channelRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

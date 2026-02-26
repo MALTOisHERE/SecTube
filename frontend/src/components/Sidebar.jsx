@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaFire, FaHistory, FaBookmark, FaVideo, FaBell } from 'react-icons/fa';
+import { FaHome, FaFire, FaHistory, FaBookmark, FaVideo, FaBell, FaChartBar } from 'react-icons/fa';
 import useAuthStore from '../store/authStore';
 import useSidebarStore from '../store/sidebarStore';
 import Z_INDEX from '../config/zIndex';
@@ -22,7 +22,10 @@ const Sidebar = () => {
     { path: '/history', icon: FaHistory, label: 'History' },
     { path: '/saved', icon: FaBookmark, label: 'Saved' },
     { path: '/subscriptions', icon: FaBell, label: 'Subscriptions' },
-    ...(user?.isStreamer ? [{ path: `/channel/${user?.username}`, icon: FaVideo, label: 'My Channel' }] : []),
+    ...(user?.isStreamer ? [
+      { path: `/channel/${user?.username}`, icon: FaVideo, label: 'My Channel' },
+      { path: '/analytics', icon: FaChartBar, label: 'Analytics' }
+    ] : []),
   ];
 
   return (

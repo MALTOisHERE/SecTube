@@ -21,6 +21,7 @@ import Search from './pages/Search';
 import History from './pages/History';
 import Saved from './pages/Saved';
 import Subscriptions from './pages/Subscriptions';
+import Analytics from './pages/Analytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import { FaTimes } from 'react-icons/fa';
 import useAuthStore from './store/authStore';
@@ -137,6 +138,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Subscriptions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute requireStreamer>
+                <Analytics />
               </ProtectedRoute>
             }
           />

@@ -89,4 +89,13 @@ export const channelAPI = {
   getFeaturedChannels: (params) => api.get('/channels/featured', { params }),
 };
 
+// Analytics API
+export const analyticsAPI = {
+  getOverview: (params) => api.get('/analytics/overview', { params }),
+  getVideoPerformance: (params) => api.get('/analytics/videos', { params }),
+  getTrends: (params) => api.get('/analytics/trends', { params }),
+  getCategoryDistribution: (params) => api.get('/analytics/categories', { params }),
+  getDifficultyDistribution: (params) => api.get('/analytics/difficulty', { params }),
+};
+
 export default api;
