@@ -43,6 +43,16 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - Responsive design with dark mode
 - RESTful API architecture
 
+### AI Assistant Features
+- **Intelligent Chatbot**: AI-powered assistant for platform navigation and video discovery
+- **MCP Integration**: Model Context Protocol for seamless API interaction
+- **Authenticated Actions**: AI can perform actions on behalf of logged-in users
+- **Natural Language Search**: Find videos using conversational queries
+- **Markdown Support**: Rich text formatting in chat responses
+- **Persistent Chat History**: Conversations saved across sessions
+- **Security-First Design**: Automatic sanitization of sensitive data
+- **Multi-Model Support**: Compatible with various LLMs via OpenRouter
+
 ## Tech Stack
 
 ### Backend
@@ -56,6 +66,10 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - **speakeasy & qrcode** for TOTP 2FA
 - **nodemailer** for secure email delivery
 - **express-rate-limit** for brute-force protection
+- **OpenRouter API** for AI model access
+- **Swagger/OpenAPI** for API documentation and MCP tool generation
+- **MCP (Model Context Protocol)** for AI agent integration
+- **Axios** for HTTP requests
 
 ### Frontend
 - **React 18** with Hooks
@@ -66,6 +80,8 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for free deployment guide using Vercel, Ren
 - **React Query** for data fetching
 - **Video.js** for video playback
 - **Axios** for HTTP requests
+- **React Markdown** with remark-gfm for AI chat rendering
+- **React Icons** for UI elements
 
 ## Prerequisites
 
@@ -162,7 +178,16 @@ FFPROBE_PATH=/usr/bin/ffprobe
 
 # Video Quality Settings
 VIDEO_QUALITIES=360p,480p,720p,1080p
+
+# AI & MCP Configuration (Optional - for AI chatbot)
+OPENROUTER_API_KEY=your_openrouter_api_key
+CHAT_MODEL=google/gemini-flash-1.5:free
 ```
+
+**Note:** To get an OpenRouter API key for the AI chatbot:
+1. Sign up at [OpenRouter](https://openrouter.ai/)
+2. Go to [API Keys](https://openrouter.ai/keys) and create a new key
+3. Recommended free models: `google/gemini-flash-1.5:free`, `meta-llama/llama-3.1-8b-instruct:free`
 
 ### 4. Start MongoDB
 
@@ -369,6 +394,31 @@ GET /api/channels?page=1&limit=12
 GET /api/channels/featured?limit=6
 ```
 
+### AI Chat Endpoints
+
+#### Chat with AI Assistant
+```http
+POST /api/chat
+Authorization: Bearer <token> (optional)
+Content-Type: application/json
+
+{
+  "messages": [
+    { "role": "user", "content": "Find me videos about SQL injection" },
+    { "role": "assistant", "content": "..." },
+    { "role": "user", "content": "Show the most popular one" }
+  ]
+}
+```
+
+**Note:** The AI assistant automatically uses MCP (Model Context Protocol) to interact with the SecTube API. It can:
+- Search and filter videos
+- Get user profiles and subscriptions
+- Perform authenticated actions (like/save videos) when logged in
+- Answer questions about cybersecurity topics
+
+For detailed MCP documentation, see `backend/src/config/MCP_DOCUMENTATION.md`
+
 ## Project Structure
 
 ```
@@ -376,39 +426,56 @@ malto_stream_pltfrm/
 ├── backend/
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── database.js          # MongoDB connection
+│   │   │   ├── database.js              # MongoDB connection
+│   │   │   ├── mcp.js                   # MCP configuration & Swagger tool generation
+│   │   │   ├── swagger.js               # Swagger/OpenAPI documentation
+│   │   │   ├── MCP_DOCUMENTATION.md     # Comprehensive MCP guide for AI agents
+│   │   │   └── MCP_QUICK_REFERENCE.md   # Quick MCP reference
 │   │   ├── controllers/
-│   │   │   ├── auth.js              # Authentication logic
-│   │   │   ├── users.js             # User management
-│   │   │   ├── videos.js            # Video operations
-│   │   │   └── channels.js          # Channel management
+│   │   │   ├── auth.js                  # Authentication logic
+│   │   │   ├── chat.js                  # AI chat controller
+│   │   │   ├── users.js                 # User management
+│   │   │   ├── videos.js                # Video operations
+│   │   │   └── channels.js              # Channel management
 │   │   ├── middleware/
-│   │   │   ├── auth.js              # JWT authentication
-│   │   │   ├── errorHandler.js      # Error handling
-│   │   │   └── upload.js            # File upload handling
+│   │   │   ├── auth.js                  # JWT authentication
+│   │   │   ├── errorHandler.js          # Error handling
+│   │   │   └── upload.js                # File upload handling
 │   │   ├── models/
-│   │   │   ├── User.js              # User schema
-│   │   │   ├── Video.js             # Video schema
-│   │   │   └── Comment.js           # Comment schema
+│   │   │   ├── User.js                  # User schema
+│   │   │   ├── Video.js                 # Video schema
+│   │   │   └── Comment.js               # Comment schema
 │   │   ├── routes/
-│   │   │   ├── auth.js              # Auth routes
-│   │   │   ├── users.js             # User routes
-│   │   │   ├── videos.js            # Video routes
-│   │   │   └── channels.js          # Channel routes
+│   │   │   ├── auth.js                  # Auth routes
+│   │   │   ├── chat.js                  # AI chat routes
+│   │   │   ├── users.js                 # User routes
+│   │   │   ├── videos.js                # Video routes
+│   │   │   └── channels.js              # Channel routes
+│   │   ├── services/
+│   │   │   └── ai/
+│   │   │       ├── index.js             # AI services hub
+│   │   │       ├── chat.service.js      # Chat service with OpenRouter
+│   │   │       ├── tools/
+│   │   │       │   └── toolExecutor.js  # MCP tool execution
+│   │   │       ├── utils/
+│   │   │       │   └── sanitizer.js     # Data sanitization for AI
+│   │   │       └── README.md            # AI services documentation
 │   │   ├── utils/
-│   │   │   └── videoProcessor.js    # FFmpeg video processing
-│   │   └── server.js                # Express app entry point
-│   ├── uploads/                      # Temporary upload directory
-│   ├── videos/                       # Processed video files
-│   ├── thumbnails/                   # Video thumbnails
-│   ├── .env.example                  # Environment variables template
+│   │   │   └── videoProcessor.js        # FFmpeg video processing
+│   │   └── server.js                    # Express app entry point
+│   ├── uploads/                          # Temporary upload directory
+│   ├── videos/                           # Processed video files
+│   ├── thumbnails/                       # Video thumbnails
+│   ├── .env.example                      # Environment variables template
 │   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Navbar.jsx           # Navigation bar
+│   │   │   ├── Chatbot.jsx          # AI chatbot component
 │   │   │   ├── VideoCard.jsx        # Video thumbnail card
 │   │   │   ├── VideoPlayer.jsx      # Video.js player
+│   │   │   ├── ConfirmDialog.jsx    # Confirmation dialogs
 │   │   │   └── ProtectedRoute.jsx   # Route guard
 │   │   ├── pages/
 │   │   │   ├── Home.jsx             # Home page
@@ -423,7 +490,9 @@ malto_stream_pltfrm/
 │   │   ├── services/
 │   │   │   └── api.js               # API client
 │   │   ├── store/
-│   │   │   └── authStore.js         # Auth state management
+│   │   │   ├── authStore.js         # Auth state management
+│   │   │   ├── toastStore.js        # Toast notifications
+│   │   │   └── sidebarStore.js      # Sidebar state
 │   │   ├── App.jsx                   # Main app component
 │   │   ├── main.jsx                  # React entry point
 │   │   └── index.css                 # Global styles
@@ -460,6 +529,55 @@ The platform supports the following cybersecurity categories:
 - Advanced
 - Expert
 
+## Troubleshooting
+
+### AI Chatbot Issues
+
+#### AI outputs raw tool calls as text instead of executing them
+**Problem**: The chatbot shows `<tool_call> <function=...>` instead of actually calling functions.
+
+**Solution**: Your selected model doesn't support function calling. Update `CHAT_MODEL` in `backend/.env` to a compatible model:
+```env
+# Recommended free models with function calling support
+CHAT_MODEL=google/gemini-flash-1.5:free
+# or
+CHAT_MODEL=meta-llama/llama-3.1-8b-instruct:free
+```
+
+Restart the backend after changing the model.
+
+#### AI chatbot not responding
+1. Check that `OPENROUTER_API_KEY` is set in `backend/.env`
+2. Verify backend server is running (`npm run dev` in backend directory)
+3. Check browser console for errors
+4. Ensure you have credits/quota on your OpenRouter account
+
+#### "AI chat is currently unavailable" error
+- The `OPENROUTER_API_KEY` environment variable is missing or invalid
+- Add your API key from [openrouter.ai/keys](https://openrouter.ai/keys) to `backend/.env`
+
+### Common Issues
+
+#### FFmpeg Not Found
+If video processing fails with FFmpeg errors:
+1. Verify FFmpeg installation: `ffmpeg -version`
+2. Update `FFMPEG_PATH` and `FFPROBE_PATH` in `backend/.env` to absolute paths
+3. On Windows, use forward slashes or escaped backslashes in paths
+
+#### MongoDB Connection
+- Ensure MongoDB is running before starting backend
+- Default connection: `mongodb://localhost:27017/sectube`
+- Check connection status in backend startup logs
+
+#### CORS Issues
+- Ensure `FRONTEND_URL` in `backend/.env` matches your frontend dev server URL
+- Default is `http://localhost:5173`
+
+#### Video Upload Timeouts
+- Large video files may timeout with default settings
+- Increase `MAX_FILE_SIZE` in backend .env
+- Check available disk space in `backend/uploads/` and `backend/videos/`
+
 ## 🌐 Deployment
 
 For detailed deployment instructions for free hosting, see **[DEPLOYMENT.md](./DEPLOYMENT.md)**
@@ -474,6 +592,55 @@ For detailed deployment instructions for free hosting, see **[DEPLOYMENT.md](./D
 
 See the full deployment guide for step-by-step instructions.
 
+## 🤖 AI Assistant & MCP Integration
+
+SecTube features an intelligent AI chatbot powered by MCP (Model Context Protocol) that can help users navigate the platform, discover videos, and perform actions naturally.
+
+### Features
+
+- **Natural Language Interaction**: Ask questions in plain English
+- **API Tool Calling**: AI automatically uses the right API endpoints via MCP
+- **Authenticated Actions**: Inherits user permissions to like videos, subscribe to channels, update profile, etc.
+- **Markdown Rendering**: Rich text responses with code syntax highlighting
+- **Persistent History**: Chat conversations saved in localStorage across sessions
+- **Security First**: Automatic sanitization of sensitive data (passwords, tokens, API keys)
+- **Multi-Model Support**: Compatible with various LLMs via OpenRouter API
+
+### How It Works
+
+1. **Swagger → MCP Tools**: API endpoints are automatically converted to MCP tools
+2. **AI Model Selection**: Configure any OpenRouter-compatible model
+3. **Tool Execution**: AI calls tools with user's JWT token for authenticated actions
+4. **Data Sanitization**: Sensitive fields filtered before sending to AI
+5. **Response Rendering**: Markdown-formatted responses displayed in chat UI
+
+### Example Queries
+
+- "Find me videos about SQL injection for beginners"
+- "Subscribe to the top bug bounty channels"
+- "What videos have I watched recently?"
+- "Update my bio to: Cybersecurity enthusiast"
+- "Show me my saved videos"
+- "Like this video and subscribe to the channel"
+
+### Documentation
+
+- **Comprehensive Guide**: `backend/src/config/MCP_DOCUMENTATION.md`
+- **Quick Reference**: `backend/src/config/MCP_QUICK_REFERENCE.md`
+- **Architecture**: `backend/src/services/ai/README.md`
+- **API Docs**: Available at `/api-docs` when running backend in development mode
+
+### Configuration
+
+The AI chatbot is optional and requires:
+1. OpenRouter API key (get one at [openrouter.ai](https://openrouter.ai/keys))
+2. Model selection in `.env` file
+
+Recommended free models:
+- `google/gemini-flash-1.5:free` - Fast, good function calling
+- `meta-llama/llama-3.1-8b-instruct:free` - Open source, reliable
+- `anthropic/claude-3.5-sonnet` - Best quality (paid)
+
 ## Future Enhancements
 
 ### Planned Features
@@ -481,12 +648,13 @@ See the full deployment guide for step-by-step instructions.
 - Real-time chat during live streams
 - Playlists and collections
 - Advanced analytics dashboard
-- Email notifications
-- Video recommendations algorithm
+- Enhanced AI features:
+  - Video content analysis and tagging
+  - Smart recommendations based on viewing history
+  - Automated moderation
 - Multi-language support
 - Mobile apps (React Native)
 - CDN integration for global delivery
-- Advanced search with filters
 - User achievements and badges
 - Private messaging between users
 
@@ -498,6 +666,16 @@ See the full deployment guide for step-by-step instructions.
 - Docker containerization
 - CI/CD pipeline
 - Automated testing (Jest, Cypress)
+
+### Recently Completed ✅
+- AI Chatbot with MCP integration
+- Swagger/OpenAPI documentation
+- Modular AI services architecture
+- Authenticated AI actions with JWT
+- Data sanitization for AI responses
+- Persistent chat history
+- Markdown rendering in chat
+- Enhanced API documentation for AI agents
 
 ## Contributing
 
