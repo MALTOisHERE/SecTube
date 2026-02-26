@@ -98,4 +98,14 @@ export const analyticsAPI = {
   getDifficultyDistribution: (params) => api.get('/analytics/difficulty', { params }),
 };
 
+// Admin API
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  getUsers: (params) => api.get('/admin/users', { params }),
+  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  getVideos: (params) => api.get('/admin/videos', { params }),
+  updateVideo: (id, data) => api.put(`/admin/videos/${id}`, data),
+};
+
 export default api;

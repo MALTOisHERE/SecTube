@@ -22,6 +22,7 @@ import History from './pages/History';
 import Saved from './pages/Saved';
 import Subscriptions from './pages/Subscriptions';
 import Analytics from './pages/Analytics';
+import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 import { FaTimes } from 'react-icons/fa';
 import useAuthStore from './store/authStore';
@@ -146,6 +147,14 @@ function App() {
             element={
               <ProtectedRoute requireStreamer>
                 <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin>
+                <Admin />
               </ProtectedRoute>
             }
           />

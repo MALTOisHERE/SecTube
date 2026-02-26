@@ -1,6 +1,7 @@
 {
   "name": "sectube",
   "version": "1.0.0",
+  "type": "module",
   "description": "A streaming platform for cybersecurity enthusiasts, bug hunters, and ethical hackers",
   "license": "UNLICENSED",
   "private": true,

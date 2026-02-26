@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo } from 'react-icons/fa';
+import { FaSearch, FaUpload, FaUser, FaSignOutAlt, FaBars, FaCog, FaVideo, FaGavel } from 'react-icons/fa';
 import { BsStars } from 'react-icons/bs';
 import { useState, useRef, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
@@ -138,12 +138,29 @@ const Navbar = () => {
                 <div className={`absolute right-0 ${getDropdownClasses(userMenuPosition)} w-56 bg-dark-900 rounded-md shadow-xl border border-dark-700 py-1.5 z-50`}>
                   {/* User Info */}
                   <div className="px-4 py-3 border-b border-dark-800">
-                    <p className="text-sm font-medium text-white truncate">{user?.displayName || user?.username}</p>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="text-sm font-medium text-white truncate">{user?.displayName || user?.username}</p>
+                      {user?.role === 'admin' && (
+                        <span className="bg-red-600/10 text-red-500 border border-red-500/20 px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest uppercase animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                          Admin
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500 truncate">@{user?.username}</p>
                   </div>
 
                   {/* Menu Items */}
                   <div className="py-1">
+                    {user?.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-dark-800 transition text-sm text-gray-300 hover:text-white"
+                      >
+                        <FaGavel size={14} />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    )}
                     <Link
                       to="/settings"
                       onClick={() => setShowUserMenu(false)}

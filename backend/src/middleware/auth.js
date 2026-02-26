@@ -31,6 +31,13 @@ export const protect = async (req, res, next) => {
       });
     }
 
+    if (req.user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: `Your account has been blocked: ${req.user.blockReason || 'No reason provided'}`
+      });
+    }
+
     next();
   } catch (error) {
     return res.status(401).json({
