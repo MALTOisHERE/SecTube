@@ -1,6 +1,8 @@
 import User from '../models/User.js';
 import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
+import mongoose from 'mongoose';
+import { isCloudinaryConfigured } from '../config/cloudinary.js';
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -205,6 +207,17 @@ export const getStats = async (req, res, next) => {
     const streamersCount = await User.countDocuments({ isStreamer: true });
     const blockedUsersCount = await User.countDocuments({ isBlocked: true });
 
+    // System Health Checks
+    const systemHealth = {
+      database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      storage: isCloudinaryConfigured() ? 'cloudinary' : 'local',
+      aiEngine: process.env.OPENROUTER_API_KEY ? 'active' : 'disabled',
+      mailServer: process.env.SMTP_HOST ? 'configured' : 'not_configured',
+      environment: process.env.NODE_ENV || 'development',
+      swagger: process.env.NODE_ENV !== 'production' ? 'active' : 'restricted',
+      mcp: 'operational' // If this code is running, the server is handling requests
+    };
+
     res.status(200).json({
       success: true,
       data: {
@@ -213,7 +226,8 @@ export const getStats = async (req, res, next) => {
         totalComments,
         totalViews: totalViews.length > 0 ? totalViews[0].total : 0,
         streamersCount,
-        blockedUsersCount
+        blockedUsersCount,
+        systemHealth
       }
     });
   } catch (error) {

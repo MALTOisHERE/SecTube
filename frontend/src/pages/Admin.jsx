@@ -87,6 +87,8 @@ const AdminOverview = ({ stats, loading }) => {
     { label: 'Blocked Users', value: stats?.blockedUsersCount, icon: FaBan, color: 'text-red-500', bg: 'bg-red-500/10' },
   ];
 
+  const health = stats?.systemHealth || {};
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -111,30 +113,111 @@ const AdminOverview = ({ stats, loading }) => {
             <FaInfoCircle className="text-primary-500" />
             Platform Status
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {/* Database Check */}
             <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
-              <div className="flex items-center gap-2 text-green-500 text-xs font-bold mb-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className={`flex items-center gap-2 text-xs font-bold mb-2 ${health.database === 'connected' ? 'text-green-500' : 'text-red-500'}`}>
+                <div className={`w-2 h-2 rounded-full animate-pulse ${health.database === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 Database
               </div>
-              <p className="text-sm text-gray-400">Systems operational. All data clusters are synchronized.</p>
+              <p className="text-[11px] text-gray-400">
+                {health.database === 'connected' ? 'MongoDB Cluster Synchronized' : 'Database Connection Interrupted'}
+              </p>
             </div>
+
+            {/* AI Engine Check */}
             <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
-              <div className="flex items-center gap-2 text-primary-500 text-xs font-bold mb-2">
-                <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
-                API Services
+              <div className={`flex items-center gap-2 text-xs font-bold mb-2 ${health.aiEngine === 'active' ? 'text-primary-500' : 'text-amber-500'}`}>
+                <div className={`w-2 h-2 rounded-full ${health.aiEngine === 'active' ? 'bg-primary-500 animate-pulse' : 'bg-amber-500'}`}></div>
+                AI Engine
               </div>
-              <p className="text-sm text-gray-400">All administrative endpoints are healthy and responsive.</p>
+              <p className="text-[11px] text-gray-400">
+                {health.aiEngine === 'active' ? 'OpenRouter Services Online' : 'AI Processing Restricted'}
+              </p>
+            </div>
+
+            {/* Storage Check */}
+            <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
+              <div className="flex items-center gap-2 text-purple-500 text-xs font-bold mb-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                Storage
+              </div>
+              <p className="text-[11px] text-gray-400 capitalize">
+                Mode: {health.storage} protocol
+              </p>
+            </div>
+
+            {/* Mail Server Check */}
+            <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
+              <div className={`flex items-center gap-2 text-xs font-bold mb-2 ${health.mailServer === 'configured' ? 'text-blue-400' : 'text-gray-500'}`}>
+                <div className={`w-2 h-2 rounded-full ${health.mailServer === 'configured' ? 'bg-blue-400' : 'bg-gray-500'}`}></div>
+                Mail Server
+              </div>
+              <p className="text-[11px] text-gray-400">
+                {health.mailServer === 'configured' ? 'SMTP Gateway Active' : 'Email Services Disabled'}
+              </p>
+            </div>
+
+            {/* Environment Check */}
+            <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
+              <div className="flex items-center gap-2 text-gray-300 text-xs font-bold mb-2">
+                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                Environment
+              </div>
+              <p className="text-[11px] text-gray-400 uppercase tracking-tighter">
+                Running in {health.environment}
+              </p>
+            </div>
+
+            {/* Swagger Status */}
+            <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
+              <div className={`flex items-center gap-2 text-xs font-bold mb-2 ${health.swagger === 'active' ? 'text-primary-400' : 'text-amber-500'}`}>
+                <div className={`w-2 h-2 rounded-full ${health.swagger === 'active' ? 'bg-primary-400 animate-pulse' : 'bg-amber-500'}`}></div>
+                Swagger UI
+              </div>
+              <p className="text-[11px] text-gray-400">
+                {health.swagger === 'active' ? 'API Docs Operational' : 'Docs Restricted (Prod)'}
+              </p>
+            </div>
+
+            {/* MCP Status */}
+            <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
+              <div className="flex items-center gap-2 text-green-500 text-xs font-bold mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.4)]"></div>
+                MCP Gateway
+              </div>
+              <p className="text-[11px] text-gray-400">
+                AI Tool Protocol Active
+              </p>
+            </div>
+
+            {/* API Status (Self Check) */}
+            <div className="p-4 bg-dark-800/30 rounded-lg border border-dark-800">
+              <div className="flex items-center gap-2 text-green-400 text-xs font-bold mb-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                REST Gateway
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Primary API Engine Stable
+              </p>
             </div>
           </div>
         </Card>
 
         <Card className="flex flex-col justify-center items-center text-center py-8">
-          <div className="w-16 h-16 bg-primary-500/10 rounded-full flex items-center justify-center mb-4 border border-primary-500/20">
-            <FaCheckCircle className="text-primary-500" size={24} />
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 border ${health.database === 'connected' ? 'bg-primary-500/10 border-primary-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+            {health.database === 'connected' ? (
+              <FaCheckCircle className="text-primary-500" size={24} />
+            ) : (
+              <FaExclamationTriangle className="text-red-500" size={24} />
+            )}
           </div>
-          <h4 className="text-white font-bold mb-1">System Healthy</h4>
-          <p className="text-gray-500 text-xs px-4">No critical issues or alerts requiring attention at this time.</p>
+          <h4 className="text-white font-bold mb-1">{health.database === 'connected' ? 'System Healthy' : 'System Critical'}</h4>
+          <p className="text-gray-500 text-xs px-4">
+            {health.database === 'connected' 
+              ? 'All core services are responding normally.' 
+              : 'Immediate database intervention required.'}
+          </p>
         </Card>
       </div>
     </div>
