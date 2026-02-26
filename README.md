@@ -422,7 +422,7 @@ For detailed MCP documentation, see `backend/src/config/MCP_DOCUMENTATION.md`
 ## Project Structure
 
 ```
-malto_stream_pltfrm/
+SecTube/
 ├── backend/
 │   ├── src/
 │   │   ├── config/
