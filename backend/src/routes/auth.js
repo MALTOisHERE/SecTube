@@ -36,6 +36,30 @@ const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Rate limiter for login: 5 attempts per 15 minutes
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many login attempts from this IP, please try again after 15 minutes'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter for registration: 5 accounts per hour
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 registration requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many accounts created from this IP, please try again after an hour'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Validation rules
 const registerValidation = [
   body('username').trim().isLength({ min: 3, max: 30 }).matches(/^[a-zA-Z0-9._-]+$/),
@@ -84,7 +108,7 @@ const loginValidation = [
  *       400:
  *         description: Bad request
  */
-router.post('/register', registerValidation, register);
+router.post('/register', registerLimiter, registerValidation, register);
 
 /**
  * @swagger
@@ -112,7 +136,7 @@ router.post('/register', registerValidation, register);
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', loginValidation, login);
+router.post('/login', loginLimiter, loginValidation, login);
 
 /**
  * @swagger
