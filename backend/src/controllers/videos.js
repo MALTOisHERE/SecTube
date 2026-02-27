@@ -1,5 +1,4 @@
 import { validationResult } from 'express-validator';
-import mongoose from 'mongoose';
 import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
 import User from '../models/User.js';
@@ -522,24 +521,7 @@ export const getCommentReplies = async (req, res, next) => {
 // Like a comment
 export const likeComment = async (req, res, next) => {
   try {
-    const userId = new mongoose.Types.ObjectId(req.user.id);
-    const comment = await Comment.findByIdAndUpdate(
-      req.params.commentId,
-      [
-        {
-          $set: {
-            likes: {
-              $cond: [
-                { $in: [userId, '$likes'] },
-                { $setDifference: ['$likes', [userId]] },
-                { $concatArrays: ['$likes', [userId]] }
-              ]
-            }
-          }
-        }
-      ],
-      { new: true }
-    );
+    const comment = await Comment.findById(req.params.commentId);
 
     if (!comment) {
       return res.status(404).json({
@@ -548,13 +530,24 @@ export const likeComment = async (req, res, next) => {
       });
     }
 
-    const isLiked = comment.likes.some(id => id.toString() === req.user.id.toString());
+    // Check if already liked
+    const likeIndex = comment.likes.findIndex(id => id.toString() === req.user.id.toString());
+
+    if (likeIndex > -1) {
+      // Already liked, so unlike
+      comment.likes.splice(likeIndex, 1);
+    } else {
+      // Not liked, so like
+      comment.likes.push(req.user.id);
+    }
+
+    await comment.save();
 
     res.status(200).json({
       success: true,
       data: {
         likes: comment.likes.length,
-        isLiked
+        isLiked: likeIndex === -1
       }
     });
   } catch (error) {
