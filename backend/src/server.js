@@ -32,8 +32,34 @@ const __dirname = path.dirname(__filename);
 // Initialize Express app
 const app = express();
 
-// Trust proxy (required for rate limiting behind Render/Vercel)
-app.set('trust proxy', 1);
+// Trust proxy configuration
+// See: https://expressjs.com/en/guide/behind-proxies.html
+const getTrustProxyFn = (env) => {
+  if (env.TRUST_PROXY !== undefined) {
+    // Handle boolean strings
+    const trustProxy = env.TRUST_PROXY.trim();
+    if (trustProxy.toLowerCase() === 'true') return true;
+    if (trustProxy.toLowerCase() === 'false') return false;
+
+    // Handle numbers
+    if (!isNaN(trustProxy) && trustProxy !== '') {
+      return parseInt(trustProxy, 10);
+    }
+
+    // Handle IP/CIDR strings (comma separated)
+    return env.TRUST_PROXY;
+  }
+
+  // Default for Render (Render sets RENDER=true in env)
+  if (env.RENDER) {
+    return 1;
+  }
+
+  // Secure default: do not trust any proxy
+  return 0; // equivalent to false
+};
+
+app.set('trust proxy', getTrustProxyFn(process.env));
 
 // Connect to database
 connectDB();
