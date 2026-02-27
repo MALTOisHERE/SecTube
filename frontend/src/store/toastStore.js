@@ -36,19 +36,19 @@ const useToastStore = create((set) => ({
 
   // Helper methods
   success: (message, duration) => {
-    set((state) => state.addToast({ type: 'success', message, duration }));
+    useToastStore.getState().addToast({ type: 'success', message, duration });
   },
 
   error: (message, duration) => {
-    set((state) => state.addToast({ type: 'error', message, duration }));
+    useToastStore.getState().addToast({ type: 'error', message, duration });
   },
 
   warning: (message, duration) => {
-    set((state) => state.addToast({ type: 'warning', message, duration }));
+    useToastStore.getState().addToast({ type: 'warning', message, duration });
   },
 
   info: (message, duration) => {
-    set((state) => state.addToast({ type: 'info', message, duration }));
+    useToastStore.getState().addToast({ type: 'info', message, duration });
   },
 }));
 

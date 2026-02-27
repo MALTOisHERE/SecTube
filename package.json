@@ -15,6 +15,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build": "cd frontend && npm run build",
+    "test": "npm run test --workspaces --if-present",
     "start": "cd backend && npm start"
   },
   "keywords": [
