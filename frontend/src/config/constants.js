@@ -1,5 +1,5 @@
 // API and Backend URL Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_API_URL) || 'http://localhost:5000/api';
 
 // Extract backend URL from API URL (remove /api suffix)
 export const BACKEND_URL = API_BASE_URL.replace('/api', '');
