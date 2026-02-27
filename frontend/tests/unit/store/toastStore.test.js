@@ -44,7 +44,7 @@ test('Toast Store Logic', async (t) => {
   });
 
   await t.test('toasts should be removed after duration', async () => {
-    const id = useToastStore.getState().addToast({ message: 'Quick toast', duration: 10 });
+    useToastStore.getState().addToast({ message: 'Quick toast', duration: 10 });
     assert.strictEqual(useToastStore.getState().toasts.length, 1);
     
     await new Promise(resolve => setTimeout(resolve, 50));
