@@ -13,7 +13,11 @@ RUN npm install --production
 COPY . .
 
 # Create necessary directories for storage
-RUN mkdir -p uploads videos thumbnails avatars
+RUN mkdir -p uploads videos thumbnails avatars && \
+    addgroup -S nodejs && adduser -S nodejs -G nodejs && \
+    chown -R nodejs:nodejs /app
+
+USER nodejs
 
 # Expose port
 EXPOSE 5000
