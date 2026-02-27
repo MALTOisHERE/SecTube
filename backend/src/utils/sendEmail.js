@@ -98,12 +98,17 @@ const logFallback = (options) => {
   console.log(`SUBJECT: ${options.subject}`);
   console.log('CONTENT:');
 
-  // Extract URL from HTML if possible
-  const urlMatch = options.html?.match(/href="([^"]+)"/);
-  if (urlMatch) {
-    console.log(`🔗 KEY URL: ${urlMatch[1]}`);
+  // Security: In production, do not log sensitive email content
+  if (process.env.NODE_ENV === 'production') {
+    console.log('[REDACTED: Email content suppressed in production logs]');
   } else {
-    console.log(options.message || 'No text content');
+    // Extract URL from HTML if possible
+    const urlMatch = options.html?.match(/href="([^"]+)"/);
+    if (urlMatch) {
+      console.log(`🔗 KEY URL: ${urlMatch[1]}`);
+    } else {
+      console.log(options.message || 'No text content');
+    }
   }
   console.log('================================================');
 };
