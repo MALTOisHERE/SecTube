@@ -3,7 +3,7 @@ uploads/*
 videos/*
 thumbnails/*
 avatars/*
-!backend/avatars/default-avatar.svg
+!avatars/default-avatar.svg
 .env
 .env.example
 .gitignore
@@ -12,4 +12,3 @@ Dockerfile
 npm-debug.log
 error.log
 tests/
-Process Group PGID: 29908
