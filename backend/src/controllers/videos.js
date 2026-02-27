@@ -3,10 +3,15 @@ import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
 import User from '../models/User.js';
 import { processVideo } from '../utils/videoProcessor.js';
-import { uploadImageToCloudinary, uploadVideoToCloudinary, getCloudinaryVideoUrl } from '../utils/cloudinaryUpload.js';
+import { uploadImageToCloudinary, uploadVideoToCloudinary, getCloudinaryVideoUrl, deleteFromCloudinary } from '../utils/cloudinaryUpload.js';
 import { isCloudinaryConfigured } from '../config/cloudinary.js';
 import path from 'path';
 import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Upload video
 export const uploadVideo = async (req, res, next) => {
@@ -294,7 +299,59 @@ export const deleteVideo = async (req, res, next) => {
     }
 
     // Delete video files
-    // TODO: Implement file deletion
+    try {
+      if (video.videoFile?.cloudinary) {
+        // Delete from Cloudinary
+        if (video.videoFile.cloudinaryPublicId) {
+          await deleteFromCloudinary(video.videoFile.cloudinaryPublicId, 'video');
+        }
+        if (video.thumbnailPublicId) {
+          await deleteFromCloudinary(video.thumbnailPublicId, 'image');
+        }
+      } else {
+        // Local storage paths
+        const videoDir = path.join(__dirname, '../../videos');
+        const thumbnailDir = path.join(__dirname, '../../thumbnails');
+
+        // Helper for async file deletion
+        const deleteFile = async (filePath) => {
+          try {
+            await fsPromises.unlink(filePath);
+          } catch (err) {
+            if (err.code !== 'ENOENT') {
+              console.error(`Error deleting file ${filePath}:`, err);
+            }
+            // Ignore ENOENT (file not found)
+          }
+        };
+
+        const deletionPromises = [];
+
+        // Delete processed video files
+        if (video.videoFile?.processedPaths) {
+          Object.values(video.videoFile.processedPaths).forEach(filename => {
+            // filename could be a URL in some cases (if mixed usage), so check if it's a local file name (doesn't start with http)
+            if (filename && !filename.startsWith('http')) {
+              const filePath = path.join(videoDir, filename);
+              deletionPromises.push(deleteFile(filePath));
+            }
+          });
+        }
+
+        // Delete thumbnail if it's a local file and not default
+        if (video.thumbnail &&
+            video.thumbnail !== 'default-thumbnail.jpg' &&
+            !video.thumbnail.startsWith('http')) {
+          const thumbnailPath = path.join(thumbnailDir, video.thumbnail);
+          deletionPromises.push(deleteFile(thumbnailPath));
+        }
+
+        await Promise.all(deletionPromises);
+      }
+    } catch (fileError) {
+      console.error('Error deleting video files:', fileError);
+      // Continue with document deletion even if file deletion fails
+    }
 
     await video.deleteOne();
 
