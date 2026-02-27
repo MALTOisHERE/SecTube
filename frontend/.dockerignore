@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.local
+.env.production
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+npm-debug.log
+error.log
+Process Group PGID: 29908
