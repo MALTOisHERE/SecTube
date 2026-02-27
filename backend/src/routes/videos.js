@@ -15,7 +15,7 @@ import {
   searchVideos
 } from '../controllers/videos.js';
 import { protect, authorize, optionalAuth } from '../middleware/auth.js';
-import { uploadMiddleware } from '../middleware/upload.js';
+import { uploadMiddleware, verifyUploadSignature } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -189,7 +189,7 @@ router.get('/:videoId/comments', optionalAuth, getComments);
  *       201:
  *         description: Video upload started
  */
-router.post('/upload', protect, authorize('streamer', 'admin'), uploadMiddleware, uploadVideo);
+router.post('/upload', protect, authorize('streamer', 'admin'), uploadMiddleware, verifyUploadSignature, uploadVideo);
 
 /**
  * @swagger

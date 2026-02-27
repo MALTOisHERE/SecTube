@@ -22,6 +22,7 @@
     "express": "^4.22.1",
     "express-rate-limit": "^7.5.1",
     "express-validator": "^7.0.1",
+    "file-type": "^21.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
