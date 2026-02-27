@@ -8,8 +8,9 @@
  * 3. Sidebar (2)
  * 4. Navbar (3)
  * 5. Dropdowns (50)
- * 6. Modal overlay & dialog (999999)
- * 7. Toast notifications (1000000)
+ * 6. Dev Banner (2000)
+ * 7. Modal overlay & dialog (999999)
+ * 8. Toast notifications (1000000)
  */
 
 export const Z_INDEX = {
@@ -24,6 +25,9 @@ export const Z_INDEX = {
 
   // Dropdowns and popovers
   DROPDOWN: 1200,
+
+  // Development Banner
+  DEV_BANNER: 2000,
 
   // Modals and dialogs (very high to appear above everything)
   MODAL_OVERLAY: 999999,
