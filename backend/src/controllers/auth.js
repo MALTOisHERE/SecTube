@@ -195,16 +195,23 @@ export const updateProfile = async (req, res, next) => {
     };
 
     // Parse JSON strings from FormData
-    if (req.body.socialLinks) {
-      fieldsToUpdate.socialLinks = typeof req.body.socialLinks === 'string'
-        ? JSON.parse(req.body.socialLinks)
-        : req.body.socialLinks;
-    }
+    try {
+      if (req.body.socialLinks) {
+        fieldsToUpdate.socialLinks = typeof req.body.socialLinks === 'string'
+          ? JSON.parse(req.body.socialLinks)
+          : req.body.socialLinks;
+      }
 
-    if (req.body.specialties) {
-      fieldsToUpdate.specialties = typeof req.body.specialties === 'string'
-        ? JSON.parse(req.body.specialties)
-        : req.body.specialties;
+      if (req.body.specialties) {
+        fieldsToUpdate.specialties = typeof req.body.specialties === 'string'
+          ? JSON.parse(req.body.specialties)
+          : req.body.specialties;
+      }
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid JSON format in socialLinks or specialties'
+      });
     }
 
     // Handle avatar upload if file provided
