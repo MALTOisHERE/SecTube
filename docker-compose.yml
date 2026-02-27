@@ -7,6 +7,43 @@ services:
       - "80:80"
     environment:
       - VITE_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
     restart: always
 
-# You can add the backend service here later
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/sectube
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_here}
+      - JWT_EXPIRE=30d
+      - BACKEND_URL=http://localhost:5000
+      - FRONTEND_URL=http://localhost
+    volumes:
+      - backend-uploads:/app/uploads
+      - backend-videos:/app/videos
+      - backend-thumbnails:/app/thumbnails
+      - backend-avatars:/app/avatars
+    depends_on:
+      - mongodb
+    restart: always
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    restart: always
+
+volumes:
+  backend-uploads:
+  backend-videos:
+  backend-thumbnails:
+  backend-avatars:
+  mongodb-data:

@@ -1,0 +1,15 @@
+node_modules
+uploads/*
+videos/*
+thumbnails/*
+avatars/*
+!backend/avatars/default-avatar.svg
+.env
+.env.example
+.gitignore
+.dockerignore
+Dockerfile
+npm-debug.log
+error.log
+tests/
+Process Group PGID: 29908
