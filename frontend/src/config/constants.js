@@ -4,13 +4,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 // Extract backend URL from API URL (remove /api suffix)
 export const BACKEND_URL = API_BASE_URL.replace('/api', '');
 
+const isAbsoluteUrl = (path) => path && (path.startsWith('http://') || path.startsWith('https://'));
+
 // Helper function to get full asset URL
 // Handles both local paths and Cloudinary URLs
 export const getAssetUrl = (path) => {
   if (!path) return `${BACKEND_URL}/avatars/default-avatar.svg`;
 
-  // If it's already a full URL (Cloudinary or other CDN), return as is
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (isAbsoluteUrl(path)) {
     return path;
   }
 
@@ -20,24 +21,21 @@ export const getAssetUrl = (path) => {
 
 // Helper functions for specific asset types
 export const getAvatarUrl = (avatarPath) => {
-  // If it's already a full URL (from Cloudinary), return as is
-  if (avatarPath && (avatarPath.startsWith('http://') || avatarPath.startsWith('https://'))) {
+  if (isAbsoluteUrl(avatarPath)) {
     return avatarPath;
   }
   return getAssetUrl(`/avatars/${avatarPath || 'default-avatar.svg'}`);
 };
 
 export const getThumbnailUrl = (thumbnailPath) => {
-  // If it's already a full URL (from Cloudinary), return as is
-  if (thumbnailPath && (thumbnailPath.startsWith('http://') || thumbnailPath.startsWith('https://'))) {
+  if (isAbsoluteUrl(thumbnailPath)) {
     return thumbnailPath;
   }
   return getAssetUrl(`/thumbnails/${thumbnailPath || 'default-thumbnail.jpg'}`);
 };
 
 export const getVideoUrl = (videoPath) => {
-  // If it's already a full URL (from Cloudinary), return as is
-  if (videoPath && (videoPath.startsWith('http://') || videoPath.startsWith('https://'))) {
+  if (isAbsoluteUrl(videoPath)) {
     return videoPath;
   }
   return getAssetUrl(videoPath);
