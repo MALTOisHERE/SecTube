@@ -464,7 +464,7 @@ const Video = () => {
                     alt={video.uploader?.displayName || video.uploader?.username}
                     className="w-10 h-10 rounded-full"
                     onError={(e) => {
-                      e.target.src = getAvatarUrl('default-avatar.svg');
+                      e.target.src = getAvatarUrl();
                     }}
                   />
                   <div>
@@ -651,7 +651,7 @@ const Video = () => {
                       alt="Your avatar"
                       className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                       onError={(e) => {
-                        e.target.src = getAvatarUrl('default-avatar.svg');
+                        e.target.src = getAvatarUrl();
                       }}
                     />
                     <div className="flex-1 relative">
@@ -748,7 +748,7 @@ const Video = () => {
                         alt={relatedVideo.title}
                         className="w-full aspect-video object-cover rounded-lg"
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/640x360/1a1a1a/666666?text=No+Thumbnail';
+                          e.target.src = getThumbnailUrl();
                         }}
                       />
                       <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 px-1 py-0.5 rounded text-xs">

@@ -77,7 +77,7 @@ const Subscriptions = () => {
                     alt={channel.displayName}
                     className="w-full h-full rounded-full object-cover"
                     onError={(e) => {
-                      e.target.src = getAvatarUrl('default-avatar.svg');
+                      e.target.src = getAvatarUrl();
                     }}
                   />
                 </div>

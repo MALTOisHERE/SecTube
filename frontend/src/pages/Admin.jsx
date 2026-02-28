@@ -358,7 +358,7 @@ const UserManagement = () => {
                       <img 
                         src={getAvatarUrl(user.avatar)} 
                         className="w-9 h-9 rounded-lg border border-dark-700 object-cover" 
-                        onError={(e) => e.target.src = '/default-avatar.svg'} 
+                        onError={(e) => e.target.src = getAvatarUrl()} 
                         alt="" 
                       />
                       <div>
@@ -554,6 +554,7 @@ const VideoManagement = () => {
                         <img 
                           src={getThumbnailUrl(video.thumbnail)} 
                           className="w-20 h-12 rounded object-cover border border-dark-700" 
+                          onError={(e) => e.target.src = getThumbnailUrl()}
                           alt="" 
                         />
                       </Link>

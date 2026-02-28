@@ -128,7 +128,7 @@ const Navbar = () => {
                   alt={user?.displayName || user?.username}
                   className="w-8 h-8 rounded-full object-cover"
                   onError={(e) => {
-                    e.target.src = getAvatarUrl('default-avatar.svg');
+                    e.target.src = getAvatarUrl();
                   }}
                 />
               </button>

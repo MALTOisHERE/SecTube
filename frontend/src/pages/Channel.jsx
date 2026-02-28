@@ -165,7 +165,7 @@ const Channel = () => {
               alt={channel.displayName || channel.username}
               className="w-28 h-28 rounded-full border border-dark-800"
               onError={(e) => {
-                e.target.src = getAvatarUrl('default-avatar.svg');
+                e.target.src = getAvatarUrl();
               }}
             />
 

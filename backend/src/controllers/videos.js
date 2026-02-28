@@ -2,6 +2,8 @@ import { validationResult } from 'express-validator';
 import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
 import User from '../models/User.js';
+import View from '../models/View.js';
+import Like from '../models/Like.js';
 import { processVideo } from '../utils/videoProcessor.js';
 import { uploadImageToCloudinary, uploadVideoToCloudinary, getCloudinaryVideoUrl } from '../utils/cloudinaryUpload.js';
 import { isCloudinaryConfigured } from '../config/cloudinary.js';
@@ -212,8 +214,29 @@ export const getVideo = async (req, res, next) => {
 
     // Increment view count (only if not the uploader)
     if (!req.user || req.user.id !== video.uploader._id.toString()) {
-      video.views += 1;
-      await video.save();
+      // Check for recent view from this user/IP to prevent spam (1 minute cooldown)
+      const lastView = await View.findOne({
+        video: video._id,
+        $or: [
+          ...(req.user ? [{ viewer: req.user.id }] : []),
+          { viewerIp: req.ip }
+        ],
+        watchedAt: { $gt: new Date(Date.now() - 60 * 1000) }
+      });
+
+      if (!lastView) {
+        video.views += 1;
+        await video.save();
+
+        // Create View record for time-series analytics
+        await View.create({
+          video: video._id,
+          viewer: req.user ? req.user.id : null,
+          viewerIp: req.ip,
+          viewerUserAgent: req.headers['user-agent'],
+          watchedAt: new Date()
+        });
+      }
     }
 
     // Update user watch history
@@ -378,15 +401,35 @@ export const likeVideo = async (req, res, next) => {
     const likeIndex = video.likes.findIndex(id => id.toString() === req.user.id.toString());
     let isLiked;
 
-    if (likeIndex > -1) {
-      video.likes.splice(likeIndex, 1);
-      isLiked = false;
-    } else {
-      video.likes.push(req.user.id);
-      isLiked = true;
-    }
+    try {
+      if (likeIndex > -1) {
+        video.likes.splice(likeIndex, 1);
+        isLiked = false;
+        // Remove Like entry for time-series analytics
+        await Like.findOneAndDelete({
+          video: video._id,
+          user: req.user.id
+        });
+      } else {
+        video.likes.push(req.user.id);
+        isLiked = true;
+        // Create Like entry for time-series analytics
+        // Using findOneAndUpdate with upsert to be more idempotent
+        await Like.findOneAndUpdate(
+          { video: video._id, user: req.user.id },
+          { $set: { likedAt: new Date() } },
+          { upsert: true, new: true }
+        );
+      }
 
-    await video.save();
+      await video.save();
+    } catch (dbError) {
+      console.error('Error during like operation:', dbError);
+      return res.status(500).json({
+        success: false,
+        message: 'Error processing like operation'
+      });
+    }
 
     res.status(200).json({
       success: true,

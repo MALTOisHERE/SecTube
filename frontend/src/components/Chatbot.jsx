@@ -197,7 +197,7 @@ const Chatbot = () => {
                       alt="You"
                       className="w-8 h-8 rounded-full border border-dark-700 object-cover"
                       onError={(e) => {
-                        e.target.src = '/default-avatar.svg';
+                        e.target.src = getAvatarUrl();
                       }}
                     />
                   ) : (
