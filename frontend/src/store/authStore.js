@@ -24,6 +24,12 @@ const useAuthStore = create(
           isAuthenticated: false,
         });
         localStorage.removeItem('token');
+        
+        // Clear chat history on logout
+        import('./chatbotStore.js').then((module) => {
+          const chatbotStore = module.default;
+          chatbotStore.getState().clearMessages();
+        });
       },
 
       updateUser: (userData) => {

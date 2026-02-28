@@ -11,30 +11,11 @@ import { getAvatarUrl } from '../config/constants';
 import ConfirmDialog from './ConfirmDialog';
 import Z_INDEX from '../config/zIndex';
 
-const STORAGE_KEY = 'sectube_chat_history';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const Chatbot = () => {
-  const { isOpen, toggleChatbot, closeChatbot } = useChatbotStore();
+  const { isOpen, toggleChatbot, closeChatbot, messages, addMessage, setMessages, clearMessages } = useChatbotStore();
   const location = useLocation();
-  const [messages, setMessages] = useState(() => {
-    // Load from localStorage on mount
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to load chat history:', e);
-      }
-    }
-    // Default welcome message
-    return [
-      {
-        role: 'assistant',
-        content: "Hi! I'm the **SecTube AI Assistant**. How can I help you today?"
-      }
-    ];
-  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -46,11 +27,6 @@ const Chatbot = () => {
   useEffect(() => {
     closeChatbot();
   }, [location.pathname, closeChatbot]);
-
-  // Save to localStorage whenever messages change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,7 +40,7 @@ const Chatbot = () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    addMessage(userMessage);
     setInput('');
     setIsLoading(true);
 
@@ -78,7 +54,7 @@ const Chatbot = () => {
       );
 
       const assistantMessage = response.data.message;
-      setMessages(prev => [...prev, assistantMessage]);
+      addMessage(assistantMessage);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to get AI response. Please try again.';
@@ -87,10 +63,10 @@ const Chatbot = () => {
         message: errorMessage,
       });
       // Optionally show error in chat
-      setMessages(prev => [...prev, {
+      addMessage({
         role: 'assistant',
         content: `I encountered an error while processing your request. Please try again or rephrase your question.`
-      }]);
+      });
     } finally {
       setIsLoading(false);
     }
@@ -104,12 +80,7 @@ const Chatbot = () => {
   };
 
   const handleClearHistory = () => {
-    const welcomeMessage = {
-      role: 'assistant',
-      content: "Hi! I'm the **SecTube AI Assistant**. How can I help you today?"
-    };
-    setMessages([welcomeMessage]);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([welcomeMessage]));
+    clearMessages();
     addToast({
       type: 'info',
       message: 'Chat history cleared',
