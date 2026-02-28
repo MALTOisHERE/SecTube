@@ -33,7 +33,6 @@ const Admin = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-dark-800 pb-8">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <FaUserShield className="text-primary-500" />
               Admin Dashboard
             </h1>
             <p className="text-gray-400 text-sm mt-1">Platform management and administrative controls</p>
