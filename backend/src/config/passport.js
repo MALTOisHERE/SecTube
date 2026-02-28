@@ -3,6 +3,7 @@ import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -46,7 +47,7 @@ if (isGithubEnabled) {
                 githubId: profile.id,
                 displayName: profile.displayName || profile.username || username,
                 avatar: 'default-avatar.svg',
-                password: Math.random().toString(36).slice(-12),
+                password: crypto.randomBytes(16).toString('hex'),
                 isVerified: true
               });
             }
@@ -95,7 +96,7 @@ if (isGoogleEnabled) {
                 googleId: profile.id,
                 displayName: profile.displayName || username,
                 avatar: 'default-avatar.svg',
-                password: Math.random().toString(36).slice(-12),
+                password: crypto.randomBytes(16).toString('hex'),
                 isVerified: true
               });
             }
