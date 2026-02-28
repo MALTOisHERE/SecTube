@@ -357,6 +357,7 @@ const Analytics = () => {
                           <img 
                             src={getThumbnailUrl(video.thumbnail)} 
                             className="w-16 h-9 object-cover rounded border border-dark-800" 
+                            onError={(e) => e.target.src = getThumbnailUrl()}
                             alt=""
                           />
                           <span className="font-medium text-gray-200 group-hover:text-primary-400 transition-colors truncate max-w-[200px] md:max-w-xs">

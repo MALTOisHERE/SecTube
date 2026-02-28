@@ -91,7 +91,7 @@ const VideoCard = ({ video, showActions = false }) => {
             alt={video.title}
             className="w-full h-full object-cover hover:opacity-90 transition-opacity duration-150"
             onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/640x360/1a1a1a/666666?text=No+Thumbnail';
+              e.target.src = getThumbnailUrl();
             }}
           />
           {/* Duration badge */}
@@ -124,7 +124,7 @@ const VideoCard = ({ video, showActions = false }) => {
             alt={video.uploader?.displayName || video.uploader?.username}
             className="w-8 h-8 rounded-full border border-dark-800"
             onError={(e) => {
-              e.target.src = getAvatarUrl('default-avatar.svg');
+              e.target.src = getAvatarUrl();
             }}
           />
         </Link>

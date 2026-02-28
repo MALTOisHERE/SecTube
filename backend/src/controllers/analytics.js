@@ -1,12 +1,15 @@
 import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
+import View from '../models/View.js';
+import Like from '../models/Like.js';
 
 /**
  * Get date filter based on time range
  * @param {string} timeRange - '7d', '30d', '90d', or 'all'
+ * @param {string} fieldName - The date field to filter on
  * @returns {object} MongoDB date filter object
  */
-const getDateFilter = (timeRange) => {
+const getDateFilter = (timeRange, fieldName = 'uploadedAt') => {
   if (timeRange === 'all' || !timeRange) return {};
 
   const days = parseInt(timeRange.replace('d', ''));
@@ -16,7 +19,7 @@ const getDateFilter = (timeRange) => {
   date.setDate(date.getDate() - days);
 
   return {
-    uploadedAt: { $gte: date }
+    [fieldName]: { $gte: date }
   };
 };
 
@@ -28,13 +31,12 @@ const getDateFilter = (timeRange) => {
 export const getOverviewStats = async (req, res, next) => {
   try {
     const timeRange = req.query.timeRange || '30d';
-    const dateFilter = getDateFilter(timeRange);
+    const dateFilter = getDateFilter(timeRange, 'uploadedAt');
 
-    // Get all videos for this user in the time range
+    // Get all videos for this user
     const userVideos = await Video.find({
-      uploader: req.user._id,
-      ...dateFilter
-    }).select('_id views likes dislikes').lean();
+      uploader: req.user._id
+    }).select('_id views likes dislikes uploadedAt').lean();
 
     if (userVideos.length === 0) {
       return res.status(200).json({
@@ -52,31 +54,54 @@ export const getOverviewStats = async (req, res, next) => {
       });
     }
 
-    // Calculate totals
-    const totalViews = userVideos.reduce((sum, v) => sum + v.views, 0);
-    const totalLikes = userVideos.reduce((sum, v) => sum + v.likes.length, 0);
-    const totalDislikes = userVideos.reduce((sum, v) => sum + v.dislikes.length, 0);
-
-    // Get comment count
     const videoIds = userVideos.map(v => v._id);
-    const totalComments = await Comment.countDocuments({
-      video: { $in: videoIds }
+
+    // Calculate total views for the selected time range using the View model
+    const viewCount = await View.countDocuments({
+      video: { $in: videoIds },
+      ...getDateFilter(timeRange, 'watchedAt')
     });
 
-    // Calculate average engagement rate
-    const avgEngagementRate = totalViews > 0
-      ? ((totalLikes / totalViews) * 100).toFixed(2)
+    // Calculate total likes for the selected time range using the Like model
+    const likeCount = await Like.countDocuments({
+      video: { $in: videoIds },
+      ...getDateFilter(timeRange, 'likedAt')
+    });
+
+    // For dislikes/comments, we'll continue to show totals for the videos 
+    // but filtered by the video's upload date as per original logic if needed, 
+    // or just total for all videos owned by the user.
+    // Original logic was filtering videos by upload date.
+    const filteredVideos = userVideos.filter(v => {
+      if (timeRange === 'all') return true;
+      const days = parseInt(timeRange.replace('d', ''));
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      return v.uploadedAt >= cutoff;
+    });
+
+    const totalDislikes = filteredVideos.reduce((sum, v) => sum + v.dislikes.length, 0);
+
+    // Get comment count for filtered videos
+    const filteredVideoIds = filteredVideos.map(v => v._id);
+    const totalComments = await Comment.countDocuments({
+      video: { $in: filteredVideoIds }
+    });
+
+    // Calculate average engagement rate based on views in range
+    const avgEngagementRate = viewCount > 0
+      ? ((likeCount / viewCount) * 100).toFixed(2)
       : 0;
 
     res.status(200).json({
       success: true,
       data: {
-        totalViews,
-        totalLikes,
+        totalViews: viewCount,
+        totalLikes: likeCount,
         totalDislikes,
         totalComments,
         subscriberCount: req.user.subscribers?.length || 0,
-        videoCount: userVideos.length,
+        videoCount: filteredVideos.length,
         avgEngagementRate: parseFloat(avgEngagementRate),
         timeRange
       }
@@ -183,46 +208,99 @@ export const getVideoPerformance = async (req, res, next) => {
 export const getTrendData = async (req, res, next) => {
   try {
     const timeRange = req.query.timeRange || '30d';
-    const dateFilter = getDateFilter(timeRange);
+    const days = timeRange === 'all' ? 30 : parseInt(timeRange.replace('d', ''));
+    
+    // Get user's video IDs
+    const userVideos = await Video.find({ uploader: req.user._id }).select('_id likes uploadedAt');
+    const videoIds = userVideos.map(v => v._id);
 
-    const trends = await Video.aggregate([
+    // Aggregate views from View model by date
+    const viewTrends = await View.aggregate([
       {
         $match: {
-          uploader: req.user._id,
-          ...dateFilter
+          video: { $in: videoIds },
+          ...getDateFilter(timeRange, 'watchedAt')
         }
       },
       {
         $group: {
-          _id: {
-            $dateToString: {
-              format: '%Y-%m-%d',
-              date: '$uploadedAt'
-            }
-          },
-          views: { $sum: '$views' },
-          likes: { $sum: { $size: '$likes' } },
-          videos: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { _id: 1 }
-      },
-      {
-        $project: {
-          _id: 0,
-          date: '$_id',
-          views: 1,
-          likes: 1,
-          videos: 1
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$watchedAt' } },
+          views: { $sum: 1 }
         }
       }
     ]);
 
+    // Aggregate likes from Like model by date
+    const likeTrendsFromModel = await Like.aggregate([
+      {
+        $match: {
+          video: { $in: videoIds },
+          ...getDateFilter(timeRange, 'likedAt')
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$likedAt' } },
+          likes: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Aggregate video uploads by date
+    const videoUploadTrends = await Video.aggregate([
+      {
+        $match: {
+          uploader: req.user._id,
+          ...getDateFilter(timeRange, 'uploadedAt')
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$uploadedAt' } },
+          videos: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Create a map of dates to stats
+    const statsMap = {};
+    
+    // Initialize dates for the range
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      statsMap[dateStr] = { date: dateStr, views: 0, likes: 0, videos: 0 };
+    }
+
+    // Fill in view data
+    viewTrends.forEach(item => {
+      if (statsMap[item._id]) {
+        statsMap[item._id].views = item.views;
+      }
+    });
+
+    // Fill in like data from new model
+    likeTrendsFromModel.forEach(item => {
+      if (statsMap[item._id]) {
+        statsMap[item._id].likes = item.likes;
+      }
+    });
+
+    // Fill in video upload data
+    videoUploadTrends.forEach(item => {
+      if (statsMap[item._id]) {
+        statsMap[item._id].videos = item.videos;
+      }
+    });
+
+    // Convert map to sorted array
+    const sortedTrends = Object.values(statsMap).sort((a, b) => a.date.localeCompare(b.date));
+
     res.status(200).json({
       success: true,
-      count: trends.length,
-      data: trends
+      count: sortedTrends.length,
+      data: sortedTrends
     });
   } catch (error) {
     console.error('Trend data error:', error);

@@ -341,6 +341,7 @@ const Settings = () => {
                   src={avatarPreview || getAvatarUrl(user?.avatar)} 
                   alt={user?.username} 
                   className="w-24 h-24 rounded-full object-cover border-2 border-dark-800 transition-colors group-hover:border-primary-500"
+                  onError={(e) => e.target.src = getAvatarUrl()}
                 />
               </div>
               <h2 className="text-lg font-bold text-white">{user?.displayName || user?.username}</h2>

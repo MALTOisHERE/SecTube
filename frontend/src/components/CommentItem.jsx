@@ -107,7 +107,7 @@ const CommentItem = ({ comment, videoUploaderId, onReplySubmit, level = 0 }) => 
           alt={comment.user.displayName}
           className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-dark-800"
           onError={(e) => {
-            e.target.src = getAvatarUrl('default-avatar.svg');
+            e.target.src = getAvatarUrl();
           }}
         />
 

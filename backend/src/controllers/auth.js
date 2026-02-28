@@ -195,16 +195,23 @@ export const updateProfile = async (req, res, next) => {
     };
 
     // Parse JSON strings from FormData
-    if (req.body.socialLinks) {
-      fieldsToUpdate.socialLinks = typeof req.body.socialLinks === 'string'
-        ? JSON.parse(req.body.socialLinks)
-        : req.body.socialLinks;
-    }
+    try {
+      if (req.body.socialLinks) {
+        fieldsToUpdate.socialLinks = typeof req.body.socialLinks === 'string'
+          ? JSON.parse(req.body.socialLinks)
+          : req.body.socialLinks;
+      }
 
-    if (req.body.specialties) {
-      fieldsToUpdate.specialties = typeof req.body.specialties === 'string'
-        ? JSON.parse(req.body.specialties)
-        : req.body.specialties;
+      if (req.body.specialties) {
+        fieldsToUpdate.specialties = typeof req.body.specialties === 'string'
+          ? JSON.parse(req.body.specialties)
+          : req.body.specialties;
+      }
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid JSON format in socialLinks or specialties'
+      });
     }
 
     // Handle avatar upload if file provided
@@ -286,7 +293,7 @@ export const updatePassword = async (req, res, next) => {
 // Upgrade user to streamer
 export const upgradeToStreamer = async (req, res, next) => {
   try {
-    const { channelName, specialties } = req.body;
+    const { channelName, specialties: rawSpecialties } = req.body;
     const user = await User.findById(req.user.id);
 
     // If user already has a channel name (returning streamer), use the existing one
@@ -297,6 +304,16 @@ export const upgradeToStreamer = async (req, res, next) => {
         success: false,
         message: 'Please provide a channel name'
       });
+    }
+
+    let specialties = rawSpecialties;
+    if (typeof rawSpecialties === 'string') {
+      try {
+        const parsed = JSON.parse(rawSpecialties);
+        specialties = Array.isArray(parsed) ? parsed : [parsed];
+      } catch (e) {
+        specialties = rawSpecialties.split(',').map(s => s.trim()).filter(s => s !== '');
+      }
     }
 
     user.isStreamer = true;
