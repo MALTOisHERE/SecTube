@@ -5,12 +5,14 @@ const STORAGE_KEY = 'sectube_chat_history';
 const useChatbotStore = create((set) => ({
   isOpen: false,
   messages: (() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to load chat history:', e);
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error('Failed to load chat history:', e);
+        }
       }
     }
     return [
@@ -27,12 +29,16 @@ const useChatbotStore = create((set) => ({
 
   addMessage: (message) => set((state) => {
     const newMessages = [...state.messages, message];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newMessages));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newMessages));
+    }
     return { messages: newMessages };
   }),
 
   setMessages: (messages) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
     set({ messages });
   },
 
@@ -43,7 +49,9 @@ const useChatbotStore = create((set) => ({
         content: "Hi! I'm the **SecTube AI Assistant**. How can I help you today?"
       }
     ];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(welcomeMessage));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(welcomeMessage));
+    }
     set({ messages: welcomeMessage });
   },
 }));
