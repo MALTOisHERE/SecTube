@@ -32,9 +32,6 @@ if (isGithubEnabled) {
 
             if (user) {
               user.githubId = profile.id;
-              if (user.avatar === 'default-avatar.svg' && profile._json.avatar_url) {
-                user.avatar = profile._json.avatar_url;
-              }
               await user.save();
             } else {
               let username = profile.username || `user_${profile.id}`;
@@ -48,7 +45,7 @@ if (isGithubEnabled) {
                 email: email || `${profile.id}@github.com`,
                 githubId: profile.id,
                 displayName: profile.displayName || profile.username || username,
-                avatar: profile._json.avatar_url || 'default-avatar.svg',
+                avatar: 'default-avatar.svg',
                 password: Math.random().toString(36).slice(-12),
                 isVerified: true
               });
@@ -84,9 +81,6 @@ if (isGoogleEnabled) {
 
             if (user) {
               user.googleId = profile.id;
-              if (user.avatar === 'default-avatar.svg' && profile._json.picture) {
-                user.avatar = profile._json.picture;
-              }
               await user.save();
             } else {
               let username = profile.emails[0].value.split('@')[0];
@@ -100,7 +94,7 @@ if (isGoogleEnabled) {
                 email: email,
                 googleId: profile.id,
                 displayName: profile.displayName || username,
-                avatar: profile._json.picture || 'default-avatar.svg',
+                avatar: 'default-avatar.svg',
                 password: Math.random().toString(36).slice(-12),
                 isVerified: true
               });

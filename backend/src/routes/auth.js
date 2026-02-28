@@ -374,7 +374,10 @@ router.get('/github', (req, res, next) => {
  *       302:
  *         description: Redirect to frontend with token
  */
-router.get('/github/callback', passport.authenticate('github', { session: false, failureRedirect: '/login' }), githubCallback);
+router.get('/github/callback', passport.authenticate('github', { 
+  session: false, 
+  failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=github_sso_failed` 
+}), githubCallback);
 
 /**
  * @swagger
@@ -405,7 +408,10 @@ router.get('/google', (req, res, next) => {
  *       302:
  *         description: Redirect to frontend with token
  */
-router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/login' }), githubCallback);
+router.get('/google/callback', passport.authenticate('google', { 
+  session: false, 
+  failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google_sso_failed` 
+}), githubCallback);
 
 // Protected routes
 /**
