@@ -26,11 +26,51 @@ export const uploadVideo = async (req, res, next) => {
       title,
       description,
       category,
-      tags,
+      tags: rawTags,
       difficulty,
-      toolsUsed,
+      toolsUsed: rawToolsUsed,
       visibility
     } = req.body;
+
+    let tags = [];
+    let toolsUsed = [];
+
+    try {
+      if (rawTags) {
+        if (Array.isArray(rawTags)) {
+          tags = rawTags;
+        } else if (typeof rawTags === 'string') {
+          // Try parsing as JSON first (for stringified arrays from FormData)
+          try {
+            const parsed = JSON.parse(rawTags);
+            tags = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (e) {
+            // If not JSON, fall back to comma-separated string
+            tags = rawTags.split(',').map(t => t.trim()).filter(t => t !== '');
+          }
+        }
+      }
+
+      if (rawToolsUsed) {
+        if (Array.isArray(rawToolsUsed)) {
+          toolsUsed = rawToolsUsed;
+        } else if (typeof rawToolsUsed === 'string') {
+          // Try parsing as JSON first
+          try {
+            const parsed = JSON.parse(rawToolsUsed);
+            toolsUsed = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (e) {
+            // If not JSON, fall back to comma-separated string
+            toolsUsed = rawToolsUsed.split(',').map(t => t.trim()).filter(t => t !== '');
+          }
+        }
+      }
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid format for tags or toolsUsed'
+      });
+    }
 
     // Check if Cloudinary is configured
     const useCloudinary = isCloudinaryConfigured();
@@ -40,9 +80,9 @@ export const uploadVideo = async (req, res, next) => {
       description,
       uploader: req.user.id,
       category,
-      tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
+      tags,
       difficulty: difficulty || 'Beginner',
-      toolsUsed: toolsUsed ? (Array.isArray(toolsUsed) ? toolsUsed : toolsUsed.split(',').map(t => t.trim())) : [],
+      toolsUsed,
       visibility: visibility || 'public',
       duration: 0, // Will be set during processing
       processingStatus: 'processing'
@@ -246,11 +286,23 @@ export const updateVideo = async (req, res, next) => {
     
     allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {
+        let value = req.body[field];
+
+        // Parse tags and toolsUsed if they are strings
+        if ((field === 'tags' || field === 'toolsUsed') && typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            value = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (e) {
+            value = value.split(',').map(t => t.trim()).filter(t => t !== '');
+          }
+        }
+
         // Force visibility to private if video has failed, regardless of user input
         if (field === 'visibility' && video.processingStatus === 'failed') {
           updateFields[field] = 'private';
         } else {
-          updateFields[field] = req.body[field];
+          updateFields[field] = value;
         }
       }
     });
