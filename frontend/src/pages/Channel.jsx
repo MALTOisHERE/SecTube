@@ -144,6 +144,19 @@ const Channel = () => {
     return String(subId) === String(currentUserId);
   }) || false;
 
+  const getSafeUrl = (url) => {
+    if (!url) return '#';
+    try {
+      const parsedUrl = new URL(url);
+      if (['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return parsedUrl.href;
+      }
+    } catch (e) {
+      // Invalid URL
+    }
+    return '#';
+  };
+
   const handleSubscribe = () => {
     if (!isAuthenticated) {
       addToast({
@@ -208,7 +221,7 @@ const Channel = () => {
                 <div className="flex items-center gap-4 mb-4 justify-center md:justify-start">
                   {channel.socialLinks.github && (
                     <a
-                      href={channel.socialLinks.github}
+                      href={getSafeUrl(channel.socialLinks.github)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-500 hover:text-gray-300 transition"
@@ -218,7 +231,7 @@ const Channel = () => {
                   )}
                   {channel.socialLinks.twitter && (
                     <a
-                      href={channel.socialLinks.twitter}
+                      href={getSafeUrl(channel.socialLinks.twitter)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-400 hover:text-white transition"
@@ -228,7 +241,7 @@ const Channel = () => {
                   )}
                   {channel.socialLinks.linkedin && (
                     <a
-                      href={channel.socialLinks.linkedin}
+                      href={getSafeUrl(channel.socialLinks.linkedin)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-500 hover:text-gray-300 transition"
@@ -238,7 +251,7 @@ const Channel = () => {
                   )}
                   {channel.socialLinks.website && (
                     <a
-                      href={channel.socialLinks.website}
+                      href={getSafeUrl(channel.socialLinks.website)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-500 hover:text-gray-300 transition"
@@ -248,7 +261,7 @@ const Channel = () => {
                   )}
                   {channel.socialLinks.hackerone && (
                     <a
-                      href={channel.socialLinks.hackerone}
+                      href={getSafeUrl(channel.socialLinks.hackerone)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-500 hover:text-gray-300 transition"
