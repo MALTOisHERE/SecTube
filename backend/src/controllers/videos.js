@@ -139,7 +139,7 @@ export const uploadVideo = async (req, res, next) => {
 export const getVideos = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 12, 100));
     const skip = (page - 1) * limit;
 
     // Build query
@@ -531,7 +531,7 @@ export const addComment = async (req, res, next) => {
 export const getComments = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 100));
     const skip = (page - 1) * limit;
 
     // Get top-level comments only (parentComment is null)
@@ -655,7 +655,7 @@ export const searchVideos = async (req, res, next) => {
   try {
     const { q, category, difficulty } = req.query;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 12, 100));
     const skip = (page - 1) * limit;
 
     // Build search query
