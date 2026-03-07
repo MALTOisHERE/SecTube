@@ -123,7 +123,7 @@ export const getOverviewStats = async (req, res, next) => {
 export const getVideoPerformance = async (req, res, next) => {
   try {
     const timeRange = req.query.timeRange || '30d';
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 100));
     const sort = req.query.sort || 'views'; // 'views' or 'uploadedAt'
     const dateFilter = getDateFilter(timeRange);
 
