@@ -9,8 +9,8 @@ import { isCloudinaryConfigured } from '../config/cloudinary.js';
 // @access  Private/Admin
 export const getUsers = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 100));
     const skip = (page - 1) * limit;
 
     const users = await User.find()
@@ -131,8 +131,8 @@ export const deleteUser = async (req, res, next) => {
 // @access  Private/Admin
 export const getVideos = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 100));
     const skip = (page - 1) * limit;
 
     const videos = await Video.find()

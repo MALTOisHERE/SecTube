@@ -53,8 +53,8 @@ export const getUserVideos = async (req, res, next) => {
     }
 
     // Query parameters for pagination and sorting
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 12, 100));
     const skip = (page - 1) * limit;
     const sort = req.query.sort || '-uploadedAt';
 
@@ -193,8 +193,8 @@ export const getSubscriptionFeed = async (req, res, next) => {
       });
     }
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 12, 100));
     const skip = (page - 1) * limit;
 
     const videos = await Video.find({
@@ -243,8 +243,8 @@ export const getWatchHistory = async (req, res, next) => {
     // Sort by watchedAt descending
     history.sort((a, b) => new Date(b.watchedAt) - new Date(a.watchedAt));
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 100));
     const skip = (page - 1) * limit;
     
     const paginatedHistory = history.slice(skip, skip + limit);
@@ -287,8 +287,8 @@ export const clearWatchHistory = async (req, res, next) => {
 // Get saved videos
 export const getSavedVideos = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 100));
     const skip = (page - 1) * limit;
 
     const user = await User.findById(req.user.id)
