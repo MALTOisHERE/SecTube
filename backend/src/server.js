@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
+import mongoSanitize from 'express-mongo-sanitize';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
@@ -95,6 +96,9 @@ app.post("/api/mcp/messages", async (req, res) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Sanitize data against NoSQL query injection
+app.use(mongoSanitize());
 
 // Setup Swagger (development only)
 if (process.env.NODE_ENV !== 'production') {
