@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
+import mongoSanitize from 'express-mongo-sanitize';
 import path from 'path';
 import mongoSanitize from 'express-mongo-sanitize';
 import { fileURLToPath } from 'url';
