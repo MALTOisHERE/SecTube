@@ -55,7 +55,23 @@ app.use('/avatars', express.static(path.join(__dirname, '../avatars')));
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "res.cloudinary.com",
+        "via.placeholder.com",
+        "*.githubusercontent.com",
+        "*.googleusercontent.com"
+      ],
+      connectSrc: ["'self'"],
+      mediaSrc: ["'self'", "res.cloudinary.com"]
+    }
+  }
 })); // Security headers with static file support
 app.use(morgan('dev')); // Logging
 app.use(compression()); // Compress responses
