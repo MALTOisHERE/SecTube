@@ -7,6 +7,7 @@ import Like from '../models/Like.js';
 import { processVideo } from '../utils/videoProcessor.js';
 import { uploadImageToCloudinary, uploadVideoToCloudinary, getCloudinaryVideoUrl } from '../utils/cloudinaryUpload.js';
 import { isCloudinaryConfigured } from '../config/cloudinary.js';
+import { deleteVideoFiles } from '../utils/fileCleanup.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -368,8 +369,8 @@ export const deleteVideo = async (req, res, next) => {
       });
     }
 
-    // Delete video files
-    // TODO: Implement file deletion
+    // Delete physical files
+    await deleteVideoFiles(video);
 
     await video.deleteOne();
 

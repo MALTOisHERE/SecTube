@@ -3,6 +3,7 @@ import Video from '../models/Video.js';
 import Comment from '../models/Comment.js';
 import mongoose from 'mongoose';
 import { isCloudinaryConfigured } from '../config/cloudinary.js';
+import { deleteUserAvatar, deleteVideoFiles } from '../utils/fileCleanup.js';
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -107,13 +108,19 @@ export const deleteUser = async (req, res, next) => {
       });
     }
 
+    // Delete user's physical files
+    await deleteUserAvatar(user);
+
+    const userVideos = await Video.find({ uploader: user._id });
+    for (const video of userVideos) {
+      await deleteVideoFiles(video);
+    }
+
     // Delete user's videos
     await Video.deleteMany({ uploader: user._id });
     
     // Delete user's comments
     await Comment.deleteMany({ user: user._id });
-    
-    // TODO: Delete physical files if necessary
 
     await user.deleteOne();
 
