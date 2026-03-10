@@ -4,8 +4,8 @@ import Video from '../models/Video.js';
 // Get all channels (streamers)
 export const getChannels = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 12, 100));
     const skip = (page - 1) * limit;
 
     // Build query
@@ -122,7 +122,7 @@ export const getChannelByUsername = async (req, res, next) => {
 // Get featured channels (top by subscribers or views)
 export const getFeaturedChannels = async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit) || 6;
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 6, 100));
 
     // Get channels with most subscribers
     const channels = await User.find({ isStreamer: true })
