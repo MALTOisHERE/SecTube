@@ -157,7 +157,7 @@ export const getVideos = async (req, res, next) => {
       query.difficulty = req.query.difficulty;
     }
 
-    if (req.query.tags) {
+    if (req.query.tags && typeof req.query.tags === 'string') {
       query.tags = { $in: req.query.tags.split(',') };
     }
 
