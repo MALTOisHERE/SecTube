@@ -149,15 +149,15 @@ export const getVideos = async (req, res, next) => {
       processingStatus: 'ready'
     };
 
-    if (req.query.category) {
+    if (req.query.category && typeof req.query.category === 'string') {
       query.category = req.query.category;
     }
 
-    if (req.query.difficulty) {
+    if (req.query.difficulty && typeof req.query.difficulty === 'string') {
       query.difficulty = req.query.difficulty;
     }
 
-    if (req.query.tags) {
+    if (req.query.tags && typeof req.query.tags === 'string') {
       query.tags = { $in: req.query.tags.split(',') };
     }
 
@@ -665,15 +665,15 @@ export const searchVideos = async (req, res, next) => {
       processingStatus: 'ready'
     };
 
-    if (q) {
+    if (q && typeof q === 'string') {
       query.$text = { $search: q };
     }
 
-    if (category) {
+    if (category && typeof category === 'string') {
       query.category = category;
     }
 
-    if (difficulty) {
+    if (difficulty && typeof difficulty === 'string') {
       query.difficulty = difficulty;
     }
 
