@@ -11,7 +11,7 @@ export const getChannels = async (req, res, next) => {
     // Build query
     const query = { isStreamer: true };
 
-    if (req.query.specialty) {
+    if (req.query.specialty && typeof req.query.specialty === 'string') {
       query.specialties = req.query.specialty;
     }
 
